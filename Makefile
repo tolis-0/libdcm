@@ -2,31 +2,34 @@ CC=gcc
 CFLAGS=-g -Wall -Wextra
 LFLAGS=-g -shared
 
-SOURCEF=num_theory.c sequences.c
-OBJECTF=num_theory.o sequences.o
-HEADERF=dcmath.h num_theory.h sequences.h
-LIBF=/usr/local/lib/libdcm.so
-
-SOURCEDIR=./src
+SOURCEDIR=./src/
 LIBDIR=/usr/local/lib/libdcm/
 INCLUDEDIR=/usr/local/include/
 
-all: copy compile link include
+SOURCEF=$(foreach D, $(SOURCEDIR), $(wildcard $(D)/*.c))
+HEADERF=$(foreach D, $(SOURCEDIR), $(wildcard $(D)/*.h))
+OBJECTF=$(patsubst %.c,%.o,$(SOURCEF))
+LIBF=/usr/local/lib/libdcm.so
+
+all: copy compile link include clean
+
+copy:	
+	mkdir -p $(LIBDIR); \
+	cp $(SOURCEF) $(HEADERF) $(LIBDIR)
+
+compile:
+	cd $(LIBDIR); \
+	$(CC) $(CFLAGS) -c *.c
+
+link:
+	cd $(LIBDIR); \
+	$(CC) $(LFLAGS) -o $(LIBF) *.o
 
 include:
 	cp $(HEADERF) $(INCLUDEDIR)
 
-link:
-	$(CC) $(LFLAGS) -o $(LIBF) $(OBJECTF)
-
-compile:
-	$(CC) $(CFLAGS) -c $(SOURCEF)
-
-copy:
-	cp $(WORKDIR)*.c $(WORKDIR)*.h $(LIBDIR)
-
 clean:
-	rm *.o $(LIBF)
+	rm $(LIBDIR)*.o $(LIBDIR)*.c $(LIBDIR)*.h
 
-cleanall:
-	rm *.o *.c *.h $(LIBF)
+delete:
+	rm $(LIBF)

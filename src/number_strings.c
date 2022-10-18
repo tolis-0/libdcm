@@ -1,3 +1,6 @@
+#include "number_strings.h"
+#include "dcmath.h"
+
 // for numbers up to 7 digits
 int is_permut(int a, int b){
 	return digit_id(a) == digit_id(b);

@@ -14,8 +14,8 @@ unsigned long modulo_mul(unsigned long b, unsigned long a, unsigned long m);
 int mr_prime_test(unsigned long n, unsigned long d, unsigned s, unsigned a);
 int ext_mr_prime_test(unsigned long n, unsigned long d, unsigned s, unsigned a);
 
-int mobius_f(int N);
-void mobius_setup();
-void rec_mob_setup(int num, int i);
+int mobius_f(int N, int* isprime);
+void mobius_setup(int *mobius, int limit, int *primes, int primes_size);
+void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int primes_size);
 
 #endif // NUM_THEORY_H
