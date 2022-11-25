@@ -42,16 +42,14 @@ long digit_idl(long n){
 
 int is_palindrome(int num){
     int n = num, rev = 0;
-    while (n) rev = rev*10 + (n%10), n /= 10;
-    if (num == rev) return 1;
-    return 0;
+	while (n) rev = rev*10 + (n%10), n /= 10;
+	return num == rev;
 }
 
 int is_palindromel(long num){
 	long n = num, rev = 0;
-    while (n) rev = rev*10 + (n%10), n /= 10;
-    if (num == rev) return 1;
-    return num == reversel(num);
+	while (n) rev = rev*10 + (n%10), n /= 10;
+	return num == rev;
 }
 
 int reverse(int num){
