@@ -132,14 +132,18 @@ unsigned long ext_modulo_exp(unsigned long b, unsigned long e, unsigned long m){
 // It's safe for m*2 <= ULONG_MAX (9 223 372 036 854 775 808 on 64bit long)
 // safe for positive signed long numbers
 unsigned long modulo_mul(unsigned long b, unsigned long a, unsigned long m){
-	unsigned long x = 0;
-	for (b %= m; a; a >>= 1){
-		if (a&1) x = (x+b)%m;
-		b = (b << 1)%m;
-	}
-
-	return x;
+    long double x;
+    unsigned long c;
+    long r;
+    if (a >= m) a %= m;
+    if (b >= m) b %= m;
+    x = a;
+    c = x * b / m;
+    r = (long)(a * b - c * m) % (long)m;
+    return r < 0 ? r + m : r;
 }
+
+
 
 // ~~~~~~~ Sieve of Eratosthenes ~~~~~~~~
 // Array which shows if a number is prime
