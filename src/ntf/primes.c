@@ -96,7 +96,7 @@ int ext_mr_prime_test(uint64_t n, uint64_t d, uint32_t s, uint32_t a) {
 	if (base == 1 || base == n-1) return 1;
 
 	for (r = 1; r < s; r++) {
-		base = modulo_mul(base, base, n);
+		base = mul_mod(base, base, n);
 		if (base == 1) return 0;
 		if (base == n-1) return 1;
 	}
@@ -120,8 +120,8 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo) {
 	uint64_t x = 1;
 
 	for(base %= modulo; exp; exp >>= 1){
-		if (exp & 1) x = modulo_mul(x, base, modulo);
-		base = modulo_mul(base, base, modulo);
+		if (exp & 1) x = mul_mod(x, base, modulo);
+		base = mul_mod(base, base, modulo);
 	}
 
 	return x;
@@ -137,7 +137,8 @@ uint64_t mul_mod (uint64_t a, uint64_t b, uint64_t m) {
 	x = a;
 	c = x * b / m;
 	r = (int64_t)(a * b - c * m) % (int64_t)m;
-	return r < 0 ? r + m : r;
+	if (r < 0) return r + m; 
+	return r;
 }
 
 
