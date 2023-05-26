@@ -26,9 +26,9 @@ include:
 	cp $(HEADERF) $(INCLUDEDIR)
 
 clean:
-	cd src/strings && make clean; \
-	cd src/num_theory && make clean; \
-	rm libdcm.so
+	cd src/nstrings && make clean
+	cd src/ntf && make clean
+	rm -f libdcm.so
 
 delete:
 	rm $(LIBF)

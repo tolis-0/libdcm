@@ -13,4 +13,4 @@ $(OBJECTF):
 	$(CC) $(CFLAGS) -c *.c
 
 clean:
-	rm *.o
+	rm -f *.o

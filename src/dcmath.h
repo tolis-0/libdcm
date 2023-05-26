@@ -1,11 +1,8 @@
-#ifndef NUMBER_THEORY_H
-	#include "num_theory.h"
+#ifndef _THEORY_H
+#include "num_theory.h"
 #endif
 
-#ifndef NUMBER_STRINGS_H
-	#include "number_strings.h"
+#ifndef _STRINGS_H
+#include "strings.h"
 #endif
 
-#ifndef _MATH_H
-	#include <math.h>
-#endif
