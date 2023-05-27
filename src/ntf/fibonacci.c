@@ -13,18 +13,19 @@ uint64_t digits_fib (uint64_t n) {
 
 uint32_t pisano (uint64_t n) {
 	uint64_t fib1, fib2, fib3;
-    uint32_t i;
+	uint32_t i;
 
-    fib1 = 0, fib2 = 1;
+	if (n == 1) return 1;
+	fib1 = 0, fib2 = 1;
 
 	for (i = 1;; i++) {
 		fib3 = (fib1 + fib2) % n;
 		if (fib2 == 0 && fib3 == 1) break;
 		fib1 = fib2;
 		fib2 = fib3;
-    }
+	}
 
-    return i;
+	return i;
 }
 
 uint64_t fib_mod (uint64_t n, uint64_t modulo) {

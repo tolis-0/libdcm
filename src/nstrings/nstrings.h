@@ -1,6 +1,9 @@
 #ifndef _NSTRINGS_H
 #define _NSTRINGS_H
 
+#ifndef _STDINT_H
+#include "stdint.h"
+#endif
 
 /* nstrings/permutations.c */
 #define is_permut7(x,y) (digit_id7(x) == digit_id7(y))

@@ -1,6 +1,9 @@
 #ifndef _NTF_H
 #define _NTF_H
 
+#ifndef _STDINT_H
+#include "stdint.h"
+#endif
 
 /* ntf/primes.c */
 int s3_prime (uint64_t n);
