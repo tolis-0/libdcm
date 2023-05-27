@@ -1,3 +1,9 @@
+#Ignore all except directories and files with extensions
+*
+!*/
+!*.*
+
+#Ignore object/library files
 *.o
 *.so
 *.a
