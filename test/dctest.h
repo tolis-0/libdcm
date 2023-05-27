@@ -14,14 +14,19 @@
 #define _print_type_int64_t  PRId64
 
 /* 	Series tests. Has a number of input values
-	and an expected output values.				 */
+	and expected output values.				 */
 #define SERIES_TEST(OUTPUT_TYPE, FUNC, INPUT_TYPE) \
 	void FUNC##_series_test () { \
-		int test_error = 0; \
+		int i, passed; \
 		FILE *test_fp = fopen(_to_string(FUNC.txt), "r"); \
+		if (test_fp == NULL) { \
+			perror(_to_string(Failed to open FUNC.txt)); \
+			return; \
+		} \
 		INPUT_TYPE input; \
 		OUTPUT_TYPE ret_val, calc_val; \
-		for (;;) { \
+		puts(_to_string(Starting tests on FUNC)); \
+		for (i = 0, passed = 0;; i++) { \
 			if (fscanf(test_fp, \
 				"%" _print_type(INPUT_TYPE) "%" _print_type(OUTPUT_TYPE), \
 				&input, &ret_val) == EOF) break; \
@@ -31,11 +36,13 @@
 						": expected %" _print_type(OUTPUT_TYPE) \
 						", got %" _print_type(OUTPUT_TYPE) "\n", \
 					input, ret_val, calc_val); \
-				test_error = 1; \
+			} else { \
+				passed++; \
 			} \
 		} \
 		fclose(test_fp); \
-		if (!test_error) { \
+		printf("Tests Passed: %d \\ %d\n", passed, i); \
+		if (passed == i) { \
 			puts(_to_string(Series test on FUNC finished without errors!)); \
 		} \
 	} \
