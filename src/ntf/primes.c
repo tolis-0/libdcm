@@ -143,8 +143,8 @@ uint64_t mul_mod (uint64_t a, uint64_t b, uint64_t m) {
 
 
 
-void er_sieve (int *isprime, int limit) {
-	int i, j;
+void er_sieve (int *isprime, uint32_t limit) {
+	uint32_t i, j;
 
 	isprime[0] = 0, isprime[1] = 0;
 	for (i = 2; i < limit; i++) isprime[i] = 1;
@@ -158,6 +158,11 @@ void er_sieve (int *isprime, int limit) {
 	}
 }
 
+
+uint64_t pcf_approx (uint64_t x) {
+	if (x < 2) return 0;
+	return ceill(1.25506L*x/logl(x));
+}
 
 
 // 1 < N < limit
