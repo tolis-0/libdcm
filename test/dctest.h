@@ -13,19 +13,21 @@
 #define _print_type_int32_t  PRId32
 #define _print_type_int64_t  PRId64
 
-/* 	Series tests. Has a number of input values
+/* 	Sequence tests. Has a number of input values
 	and expected output values.				 */
-#define SERIES_TEST(OUTPUT_TYPE, FUNC, INPUT_TYPE) \
-	void FUNC##_series_test () { \
+#define SEQUENCE_TEST(OUTPUT_TYPE, FUNC, INPUT_TYPE) \
+	SEQUENCE_TEST_F(OUTPUT_TYPE, FUNC, INPUT_TYPE, FUNC)
+
+#define SEQUENCE_TEST_F(OUTPUT_TYPE, FUNC, INPUT_TYPE, FILENAME) \
+	void FUNC##_sequence_test () { \
 		int i, passed; \
-		FILE *test_fp = fopen(_to_string(FUNC.txt), "r"); \
+		FILE *test_fp = fopen(_to_string(FILENAME.txt), "r"); \
 		if (test_fp == NULL) { \
 			perror(_to_string(Failed to open FUNC.txt)); \
 			return; \
 		} \
 		INPUT_TYPE input; \
 		OUTPUT_TYPE ret_val, calc_val; \
-		puts(_to_string(Starting tests on FUNC)); \
 		for (i = 0, passed = 0;; i++) { \
 			if (fscanf(test_fp, \
 				"%" _print_type(INPUT_TYPE) "%" _print_type(OUTPUT_TYPE), \
@@ -41,9 +43,11 @@
 			} \
 		} \
 		fclose(test_fp); \
-		printf("Tests Passed: %d \\ %d\n", passed, i); \
+		printf(_to_string(FUNC sequence test result: %d\\%d), passed, i); \
 		if (passed == i) { \
-			puts(_to_string(Series test on FUNC finished without errors!)); \
+			puts("  \033[32mPassed\033[39m"); \
+		} else { \
+			puts("  \033[31mFailed\033[39m"); \
 		} \
 	} \
 
