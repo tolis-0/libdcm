@@ -24,9 +24,9 @@ int main () {
 	s3_prime_sequence_test();
 	ef_prime_sequence_test();
 
-	//malloc_sieve(isprime_array, 100001);
-	//er_sieve_sequence_test(isprime_array);
-	//free(isprime_array);
+	malloc_sieve(isprime_array, 100001);
+	er_sieve_sequence_test(isprime_array);
+	free(isprime_array);
 
 	mr_prime_set_test();
 	s3_prime_set_test();

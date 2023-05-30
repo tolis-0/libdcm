@@ -18,7 +18,7 @@
 #define _scan_type(type) _scan_type_##type
 #define _scan_type_uint32_t  SCNu32
 #define _scan_type_uint64_t  SCNu64
-#define _scan_type_int8_t    PRId8
+#define _scan_type_int8_t    SCNd8
 #define _scan_type_int32_t   SCNd32
 #define _scan_type_int64_t   SCNd64
 #define _scan_type_size_t    "zu"
