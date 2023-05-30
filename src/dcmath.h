@@ -10,7 +10,7 @@
 #endif
 
 
-#define _to_string(s) #s
+#define _to_string(s...) #s
 
 
 #endif // _DCMATH_H

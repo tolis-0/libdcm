@@ -1,6 +1,7 @@
 #ifndef _NTF_H
 #define _NTF_H
 
+#include <stdint.h>
 #include <stddef.h>
 
 
@@ -55,7 +56,7 @@ int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, ui
 
 /* Malloc Macros */
 #define malloc_sieve(IS_PRIME, LIMIT) \
-	IS_PRIME = (int *) malloc((LIMIT)*sizeof(int)); \
+	IS_PRIME = (int8_t *) malloc((LIMIT)*sizeof(int8_t)); \
 	er_sieve (IS_PRIME, LIMIT);
 
 #define malloc_primes(IS_PRIME, TYPE_1, PRIMES, TYPE_2, N, LIMIT) \
