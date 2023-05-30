@@ -1,9 +1,11 @@
 #include <stdint.h>
+#include <string.h>
 #include <math.h>
 #include "ntf.h"
 
 
-int s3_prime (uint64_t n) {
+int s3_prime (uint64_t n) 
+{
 	uint64_t root, p;
 
     if (n < 2) return 0;
@@ -22,7 +24,8 @@ int s3_prime (uint64_t n) {
 }
 
 // Miller–Rabin primality test
-int mr_prime (uint64_t n) {
+int mr_prime (uint64_t n) 
+{
 	uint64_t d;	// n = (2^s)*d+1
 	uint32_t s;
 
@@ -65,13 +68,15 @@ int mr_prime (uint64_t n) {
 }
 
 /* Chooses one of the 2 algorithms above based on how large n is */
-int ef_prime (uint64_t n) {
+int ef_prime (uint64_t n) 
+{
 	if (n < 350000) return s3_prime(n);
 	return mr_prime(n);
 }
 
-// Tests n with simple modulo exp algorithm (m^2 <= ULONG_MAX)
-int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a) {
+/* Tests n with simple modulo exp algorithm (m^2 <= ULONG_MAX) */
+int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a) 
+{
 	uint64_t base;
 	uint32_t r;
 
@@ -88,7 +93,8 @@ int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a) {
 }
 
 
-int ext_mr_prime_test(uint64_t n, uint64_t d, uint32_t s, uint32_t a) {
+int ext_mr_prime_test(uint64_t n, uint64_t d, uint32_t s, uint32_t a) 
+{
 	uint64_t base;
 	uint32_t r;
 
@@ -104,7 +110,8 @@ int ext_mr_prime_test(uint64_t n, uint64_t d, uint32_t s, uint32_t a) {
 }
 
 
-uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t modulo) {
+uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t modulo) 
+{
 	uint64_t x = 1;
 
 	for (base %= modulo; exp; exp >>= 1){
@@ -116,7 +123,8 @@ uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t modulo) {
 }
 
 
-uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo) {
+uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo) 
+{
 	uint64_t x = 1;
 
 	for(base %= modulo; exp; exp >>= 1){
@@ -128,7 +136,8 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo) {
 }
 
 
-uint64_t mul_mod (uint64_t a, uint64_t b, uint64_t m) {
+uint64_t mul_mod (uint64_t a, uint64_t b, uint64_t m) 
+{
 	long double x;
 	uint64_t c;
 	int64_t r;
@@ -136,37 +145,40 @@ uint64_t mul_mod (uint64_t a, uint64_t b, uint64_t m) {
 	if (b >= m) b %= m;
 	x = a;
 	c = x * b / m;
-	r = (int64_t)(a * b - c * m) % (int64_t)m;
+	r = (int64_t) (a * b - c * m) % (int64_t) m;
 	if (r < 0) return r + m; 
 	return r;
 }
 
 
 
-void er_sieve (int *isprime, uint32_t limit) {
-	uint32_t i, j;
+void er_sieve (int8_t *isprime, size_t limit) 
+{
+	size_t i, j;
 
 	isprime[0] = 0, isprime[1] = 0;
-	for (i = 2; i < limit; i++) isprime[i] = 1;
+	memset(&isprime[2], 1, limit - 2);
 
-	for (i = 2; i*i < limit; i++){
+	for (i = 2; i * i < limit; i++) {
 		if (!isprime[i]) continue;
-		for(j = 2;; j++){
-			if (i*j >= limit) break;
-			else isprime[i*j] = 0;
+
+		for (j = 2;; j++) {
+			if (i * j >= limit) break;
+			else isprime[i * j] = 0;
 		}
 	}
 }
 
 
-uint64_t pcf_approx (uint64_t x) {
+uint64_t pcf_approx (uint64_t x) 
+{
 	if (x < 2) return 0;
 	return ceill(1.25506L*x/logl(x));
 }
 
 
-// 1 < N < limit
-int mobius_f (int N, int* isprime) {
+int mobius_f (int N, int* isprime) 
+{
 	int i, p = 0, N_ = N, sq = (int) floor(sqrt(N));
 
 	if (isprime[N]) return -1;
@@ -201,7 +213,8 @@ int mobius_f (int N, int* isprime) {
 // int mobius[limit] = {0};
 // primes_size is the size of the array primes[]
 // primes[] = {2,3,5,7,11,13,...}
-void mobius_setup (int *mobius, int limit, int *primes, int primes_size) {
+void mobius_setup (int *mobius, int limit, int *primes, int primes_size) 
+{
 	mobius[1] = 1;
 	int i;
 	for (i = 0; i < primes_size; i++){
@@ -214,7 +227,8 @@ void mobius_setup (int *mobius, int limit, int *primes, int primes_size) {
 // num: 	number that called
 // number is of type: p0*p1*p2*...pn (squarefree)
 // i:		number of largest prime factor (pi) of caller number
-void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int primes_size) {
+void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int primes_size) 
+{
 // n: 		new number generated
 	long n;
 	for (i++; i < primes_size; i++){

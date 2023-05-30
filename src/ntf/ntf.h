@@ -1,13 +1,8 @@
 #ifndef _NTF_H
 #define _NTF_H
 
-#ifndef _STDINT_H
-#include "stdint.h"
-#endif
+#include <stddef.h>
 
-#ifndef _MATH_H
-#include "math.h"
-#endif
 
 /* ntf/primes.c */
 int s3_prime (uint64_t n);
@@ -20,13 +15,12 @@ uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 uint64_t mul_mod (uint64_t a, uint64_t b, uint64_t m);
 
-void er_sieve (int *isprime, uint32_t limit);
+void er_sieve (int8_t *isprime, size_t limit);
 
 uint64_t pcf_approx (uint64_t x);
 int mobius_f (int N, int* isprime);
 void mobius_setup (int *mobius, int limit, int *primes, int primes_size);
 void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int primes_size);
-
 
 
 
@@ -37,6 +31,7 @@ void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int prim
 uint64_t digits_fib (uint64_t n);
 uint32_t pisano (uint64_t n);
 uint64_t fib_mod (uint64_t n, uint64_t modulo);
+
 
 
 /* ntf/divisibility.c */
@@ -57,12 +52,11 @@ uint16_t factoring_ft (uint32_t n, factor_i *factors, uint32_t *table);
 int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, uint32_t *table);
 
 
-/* Malloc Macros */
 
+/* Malloc Macros */
 #define malloc_sieve(IS_PRIME, LIMIT) \
 	IS_PRIME = (int *) malloc((LIMIT)*sizeof(int)); \
 	er_sieve (IS_PRIME, LIMIT);
-
 
 #define malloc_primes(IS_PRIME, TYPE_1, PRIMES, TYPE_2, N, LIMIT) \
 	malloc_sieve(IS_PRIME, LIMIT); \
@@ -71,14 +65,13 @@ int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, ui
 	for (TYPE_2 p_alloc_i = 2; p_alloc_i <= LIM; p_alloc_i++) \
 		if (IS_PRIME[p_alloc_i]) PRIMES[N++] = p_alloc_i;
 
-
 #define malloc_primes_i(IS_PRIME, PRIMES, N, LIMIT) \
 	malloc_primes(IS_PRIME, uint32_t, PRIMES, uint32_t, N, LIMIT)
-
 
 #define malloc_factor_table(IS_PRIME, LIMIT, PRIMES, N, TABLE) \
 	TABLE = (uint32_t *) malloc((LIMIT)*sizeof(uint32_t)); \
 	factor_table(IS_PRIME, LIMIT, PRIMES, N, TABLE);
+
 
 
 #endif // _NTF_H
