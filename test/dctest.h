@@ -43,7 +43,7 @@
 		int i, passed; \
 		INPUT_TYPE input; \
 		OUTPUT_TYPE ret_val, calc_val; \
-		FILE *test_fp = fopen(_to_string(FILENAME.txt), "r"); \
+		FILE *test_fp = fopen(_to_string(data/FILENAME.txt), "r"); \
 		if (test_fp == NULL) { \
 			perror(_to_string(Failed to open FILENAME.txt)); \
 			return; \
@@ -81,7 +81,7 @@
 	void FUNC##_##TEST_NAME##_test () { \
 		int i, passed, output, expected; \
 		INPUT_TYPE input, next; \
-		FILE *test_fp = fopen(_to_string(FILENAME.txt), "r"); \
+		FILE *test_fp = fopen(_to_string(data/FILENAME.txt), "r"); \
 		if (test_fp == NULL) { \
 			perror(_to_string(Failed to open FILENAME.txt)); \
 			return; \
@@ -127,7 +127,7 @@
 	void FUNC##_##TEST_NAME##_test () { \
 		int i, passed, output; \
 		INPUT_TYPE input; \
-		FILE *test_fp = fopen(_to_string(FILENAME.txt), "r"); \
+		FILE *test_fp = fopen(_to_string(data/FILENAME.txt), "r"); \
 		if (test_fp == NULL) { \
 			perror(_to_string(Failed to open FILENAME.txt)); \
 			return; \
