@@ -61,22 +61,21 @@ int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, ui
 		er_sieve (is_prime, limit); \
 	} while (0)
 
-#define malloc_primes(is_prime, type, primes, N, limit) \
+
+#define malloc_primes(is_prime, primes, N, limit) \
 	do { \
 		malloc_sieve(is_prime, limit); \
-		primes = (type *) malloc(pcf_approx(limit) * sizeof(type)); \
+		primes = (typeof(primes)) malloc(pcf_approx(limit) * sizeof(*primes)); \
 		N = 0; \
-		for (type i = 2; i <= LIM; i++) \
+		for (typeof(*primes) i = 2; i < (limit); i++) \
 			if (is_prime[i]) primes[N++] = i; \
 	} while (0)
 
-#define malloc_primes_i(is_prime, primes, N, limit) \
-	malloc_primes(is_prime, uint32_t, primes, uint32_t, N, limit)
 
-#define malloc_factor_table(is_prime, limit, primes, N, table) \
+#define malloc_factor_table(is_prime, primes, tablem, N, limit) \
 	do { \
 		table = (uint32_t *) malloc((limit)*sizeof(uint32_t)); \
-		factor_table(is_prime, limit, primes, N, table);
+		factor_table(is_prime, limit, primes, N, table); \
 	} while (0);
 
 
