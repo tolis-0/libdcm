@@ -2,18 +2,18 @@
 #define _DCALGS_H
 
 
-/* 	Binary Search. Finds the value X in [START, END] such that
-	if VAR >= X then CONDITION is true, otherwise it's false.
-	In the end VAR = X and all the variables are set correctly.
+/* 	Binary Search. Finds the value x in [start, end] such that
+	if var >= x then condition is true, otherwise it's false.
+	In the end var = x and all the variables are set correctly.
 	WARNING: The statements inside have to be deterministic for
-	some value of VAR otherwise the behaviour is undefined       */
+	some value of var otherwise the behaviour is undefined       */
 
-#define ftbs(VAR, START, END, CONDITION) \
-	VAR = ((START) + (END))/2; \
-	for (int64_t VAR##_r = (START), VAR##_l = (END), VAR##_cond = 0; \
-		(VAR##_r < VAR##_l && (VAR = (VAR##_r + VAR##_l)/2, 1)) \
-		|| ((VAR == VAR##_r) ? 0 : (VAR = VAR##_r, 1)); \
-		(CONDITION) ? (VAR##_l = VAR) : (VAR##_r = VAR + 1))
+#define ftbs(var, start, end, condition) \
+	var = ((start) + (end))/2; \
+	for (int64_t var##_r = (start), var##_l = (end), var##_cond = 0; \
+		(var##_r < var##_l && (var = (var##_r + var##_l)/2, 1)) \
+		|| ((var == var##_r) ? 0 : (var = var##_r, 1)); \
+		(condition) ? (var##_l = var) : (var##_r = var + 1))
 
 /*	
  *	Example Usage:
