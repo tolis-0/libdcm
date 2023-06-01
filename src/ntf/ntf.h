@@ -56,22 +56,28 @@ int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, ui
 
 /* Malloc Macros */
 #define malloc_sieve(is_prime, limit) \
-	is_prime = (int8_t *) malloc((limit)*sizeof(int8_t)); \
-	er_sieve (is_prime, limit);
+	do { \
+		is_prime = (int8_t *) malloc((limit)*sizeof(int8_t)); \
+		er_sieve (is_prime, limit); \
+	} while (0)
 
 #define malloc_primes(is_prime, type, primes, N, limit) \
-	malloc_sieve(is_prime, limit); \
-	primes = (type *) malloc(pcf_approx(limit) * sizeof(type)); \
-	N = 0; \
-	for (type i = 2; i <= LIM; i++) \
-		if (is_prime[i]) primes[N++] = i;
+	do { \
+		malloc_sieve(is_prime, limit); \
+		primes = (type *) malloc(pcf_approx(limit) * sizeof(type)); \
+		N = 0; \
+		for (type i = 2; i <= LIM; i++) \
+			if (is_prime[i]) primes[N++] = i; \
+	} while (0)
 
 #define malloc_primes_i(is_prime, primes, N, limit) \
 	malloc_primes(is_prime, uint32_t, primes, uint32_t, N, limit)
 
 #define malloc_factor_table(is_prime, limit, primes, N, table) \
-	table = (uint32_t *) malloc((limit)*sizeof(uint32_t)); \
-	factor_table(is_prime, limit, primes, N, table);
+	do { \
+		table = (uint32_t *) malloc((limit)*sizeof(uint32_t)); \
+		factor_table(is_prime, limit, primes, N, table);
+	} while (0);
 
 
 

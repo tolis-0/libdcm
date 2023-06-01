@@ -10,7 +10,7 @@
 
 #define ftbs(var, start, end, condition) \
 	var = ((start) + (end))/2; \
-	for (int64_t var##_r = (start), var##_l = (end), var##_cond = 0; \
+	for (int64_t var##_r = (start), var##_l = (end); \
 		(var##_r < var##_l && (var = (var##_r + var##_l)/2, 1)) \
 		|| ((var == var##_r) ? 0 : (var = var##_r, 1)); \
 		(condition) ? (var##_l = var) : (var##_r = var + 1))
