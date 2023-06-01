@@ -9,11 +9,11 @@
 	some value of VAR otherwise the behaviour is undefined       */
 
 #define ftbs(VAR, START, END, CONDITION) \
-	VAR = (START + END)/2; \
-	for (int64_t VAR##_r = START, VAR##_l = END, VAR##_cond = 0; \
-		VAR##_r < VAR##_l || (VAR##_cond ? 0 : (VAR##_cond = 1)); \
-		(CONDITION) ? (VAR##_l = VAR) : (VAR##_r = VAR + 1), \
-		VAR = (VAR##_r + VAR##_l)/2)
+	VAR = ((START) + (END))/2; \
+	for (int64_t VAR##_r = (START), VAR##_l = (END), VAR##_cond = 0; \
+		(VAR##_r < VAR##_l && (VAR = (VAR##_r + VAR##_l)/2, 1)) \
+		|| ((VAR == VAR##_r) ? 0 : (VAR = VAR##_r, 1)); \
+		(CONDITION) ? (VAR##_l = VAR) : (VAR##_r = VAR + 1))
 
 /*	
  *	Example Usage:
