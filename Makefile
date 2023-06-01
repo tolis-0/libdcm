@@ -1,7 +1,7 @@
 CC = gcc
 LFLAGS = -g -shared
 
-SOURCEDIR = src src/nstrings src/ntf
+SOURCEDIR = src src/nstrings src/ntf src/dcalgs
 LIBDIR = /usr/local/lib/libdcm/
 INCLUDEDIR = /usr/local/include/
 

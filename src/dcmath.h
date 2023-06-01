@@ -9,6 +9,10 @@
 #include "nstrings.h"
 #endif
 
+#ifndef _DCALGS_H
+#include "dcalgs.h"
+#endif
+
 
 #define _to_string(s...) #s
 
