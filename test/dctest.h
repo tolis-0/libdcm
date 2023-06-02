@@ -7,149 +7,144 @@
 #include <inttypes.h>
 
 
-#define _print_type(type) _print_type_##type
+#define _print_type(type) "%" _print_type_##type
 #define _print_type_uint32_t PRIu32
 #define _print_type_uint64_t PRIu64
 #define _print_type_int8_t   PRId8
 #define _print_type_int32_t  PRId32
 #define _print_type_int64_t  PRId64
+#define _print_type_int      "d"
 #define _print_type_size_t   "zu"
 
-#define _scan_type(type) _scan_type_##type
+#define _scan_type(type) "%" _scan_type_##type
 #define _scan_type_uint32_t  SCNu32
 #define _scan_type_uint64_t  SCNu64
 #define _scan_type_int8_t    SCNd8
 #define _scan_type_int32_t   SCNd32
 #define _scan_type_int64_t   SCNd64
+#define _scan_type_int       "d"
 #define _scan_type_size_t    "zu"
+
+
+#define TEST_PASSED "\033[32mPassed\033[39m"
+#define TEST_FAILED "\033[31mFailed\033[39m"
+#define _print_test_result(function, test_name, all, passed) \
+	do { \
+		printf(_to_string(function test_name test result: %d\\%d), passed, all); \
+		if (passed == i) { \
+			puts("  " TEST_PASSED); \
+		} else { \
+			puts("  " TEST_FAILED); \
+		} \
+	} while (0)
+
+#define _test_check(in_type, out_type, input, expected, got) \
+	do { \
+		if (expected == got) { \
+			passed++; \
+		} else { \
+			printf("at input " _print_type(in_type) \
+					": expected " _print_type(out_type) \
+					", got " _print_type(out_type) "\n", \
+				input, expected, got); \
+		} \
+	} while (0)
+
+#define _test_file_open(fp, filename) \
+	do { \
+		fp = fopen(_to_string(data/filename.txt), "r"); \
+		if (fp == NULL) { \
+			perror(_to_string(Failed to open filename.txt)); \
+			return; \
+		} \
+	} while (0)
+
 
 
 /* 	Sequence tests. Has a number of input values
 	and expected output values.						*/
-#define SEQUENCE_TEST(OUTPUT_TYPE, FUNC, INPUT_TYPE) \
-	SEQUENCE_TEST_F(OUTPUT_TYPE, FUNC, INPUT_TYPE, FUNC)
+#define SEQUENCE_TEST(output_type, function, input_type) \
+	SEQUENCE_TEST_F(output_type, function, input_type, function)
 
-#define SEQUENCE_TEST_A(OUTPUT_TYPE, FUNC) \
-	SEQUENCE_TEST_AF(OUTPUT_TYPE, FUNC, FUNC)
+#define SEQUENCE_TEST_A(output_type, function) \
+	SEQUENCE_TEST_AF(output_type, function, function)
 
-#define SEQUENCE_TEST_F(OUTPUT_TYPE, FUNC, INPUT_TYPE, FILENAME) \
-	SEQUENCE_TEST_GENERAL(OUTPUT_TYPE, FUNC, INPUT_TYPE, FILENAME, FUNC(input), )
+#define SEQUENCE_TEST_F(output_type, function, input_type, filename) \
+	SEQUENCE_TEST_GENERAL(output_type, function, input_type, filename, function(input), )
 
-#define SEQUENCE_TEST_AF(OUTPUT_TYPE, FUNC, FILENAME) \
-	SEQUENCE_TEST_GENERAL(OUTPUT_TYPE, FUNC, size_t, FILENAME, array[input], OUTPUT_TYPE *array)
+#define SEQUENCE_TEST_AF(output_type, function, filename) \
+	SEQUENCE_TEST_GENERAL(output_type, function, size_t, filename, array[input], output_type *array)
 
-#define SEQUENCE_TEST_GENERAL(OUTPUT_TYPE, FUNC, INPUT_TYPE, FILENAME, SEQ_CALL, ARGUMENT) \
-	void FUNC##_sequence_test (ARGUMENT) { \
+#define SEQUENCE_TEST_GENERAL(output_type, function, input_type, filename, seq_call, argument) \
+	void function##_sequence_test (argument) { \
 		int i, passed; \
-		INPUT_TYPE input; \
-		OUTPUT_TYPE ret_val, calc_val; \
-		FILE *test_fp = fopen(_to_string(data/FILENAME.txt), "r"); \
-		if (test_fp == NULL) { \
-			perror(_to_string(Failed to open FILENAME.txt)); \
-			return; \
-		} \
+		input_type input; \
+		output_type ret_val, calc_val; \
+		FILE *test_fp; \
+		\
+		_test_file_open(test_fp, filename); \
 		for (i = 0, passed = 0;; i++) { \
-			if (fscanf(test_fp, \
-				"%" _scan_type(INPUT_TYPE) "%" _scan_type(OUTPUT_TYPE), \
+			if (fscanf(test_fp, _scan_type(input_type) _scan_type(output_type), \
 				&input, &ret_val) == EOF) break; \
-			calc_val = SEQ_CALL; \
-			if (ret_val != calc_val) { \
-				printf("at input %" _print_type(INPUT_TYPE) \
-						": expected %" _print_type(OUTPUT_TYPE) \
-						", got %" _print_type(OUTPUT_TYPE) "\n", \
-					input, ret_val, calc_val); \
-			} else { \
-				passed++; \
-			} \
+			calc_val = seq_call; \
+			_test_check(input_type, output_type, input, ret_val, calc_val); \
 		} \
 		fclose(test_fp); \
-		printf(_to_string(FUNC sequence test result: %d\\%d), passed, i); \
-		if (passed == i) { \
-			puts("  \033[32mPassed\033[39m"); \
-		} else { \
-			puts("  \033[31mFailed\033[39m"); \
-		} \
+		_print_test_result(function, sequence, i, passed); \
 	}
 
 
 /* 	Set tests. Has a list of numbers and expects 
 	output 1 if the number is in the list, otherwise 0 */
-#define SET_TEST_F(FUNC, INPUT_TYPE, FILENAME) \
-	SET_TEST_FNS(FUNC, INPUT_TYPE, FILENAME, set, 0)
+#define SET_TEST_F(function, input_type, filename) \
+	SET_TEST_FNS(function, input_type, filename, set, 0)
 
-#define SET_TEST_FNS(FUNC, INPUT_TYPE, FILENAME, TEST_NAME, START) \
-	void FUNC##_##TEST_NAME##_test () { \
+#define SET_TEST_FNS(function, input_type, filename, test_name, start) \
+	void function##_##test_name##_test () { \
 		int i, passed, output, expected; \
-		INPUT_TYPE input, next; \
-		FILE *test_fp = fopen(_to_string(data/FILENAME.txt), "r"); \
-		if (test_fp == NULL) { \
-			perror(_to_string(Failed to open FILENAME.txt)); \
+		input_type input, next; \
+		FILE *test_fp; \
+		\
+		_test_file_open(test_fp, filename); \
+		if (fscanf(test_fp, _scan_type(input_type), &next) == EOF) { \
+			fprintf(stderr, _to_string(filename.txt is empty\n)); \
 			return; \
 		} \
-		if (fscanf(test_fp, \
-					"%" _scan_type(INPUT_TYPE), &next) == EOF) { \
-			fprintf(stderr, _to_string(FILENAME.txt is empty\n)); \
-			return; \
-		} \
-		input = START; \
+		input = start; \
 		for (i = 0, passed = 0;; i++, input++) { \
 			if (input > next) { \
-				if (fscanf(test_fp, \
-					"%" _scan_type(INPUT_TYPE), &next) == EOF) break; \
+				if (fscanf(test_fp, _scan_type(input_type), &next) == EOF) break; \
 			} \
 			if (input == next) expected = 1; \
 			else expected = 0; \
-			output = FUNC(input); \
-			if (expected != output) { \
-				printf("at input %" _print_type(INPUT_TYPE) \
-						": expected %d, got %d\n", input, expected, output); \
-			} else { \
-				passed++; \
-			} \
+			output = function(input); \
+			_test_check(input_type, int, input, expected, output); \
 		} \
 		fclose(test_fp); \
-		printf(_to_string(FUNC TEST_NAME test result: %d\\%d), passed, i); \
-		if (passed == i) { \
-			puts("  \033[32mPassed\033[39m"); \
-		} else { \
-			puts("  \033[31mFailed\033[39m"); \
-		} \
+		_print_test_result(function, test_name, i, passed); \
 	}
 
 
-#define FALSE_TEST_FN(FUNC, INPUT_TYPE, FILENAME, TEST_NAME) \
-	EXPECTED_TEST_FN(0, FUNC, INPUT_TYPE, FILENAME, TEST_NAME)
+#define FALSE_TEST_FN(function, input_type, filename, test_name) \
+	EXPECTED_TEST_FN(0, function, input_type, filename, test_name)
 
-#define TRUE_TEST_FN(FUNC, INPUT_TYPE, FILENAME, TEST_NAME) \
-	EXPECTED_TEST_FN(1, FUNC, INPUT_TYPE, FILENAME, TEST_NAME)
+#define TRUE_TEST_FN(function, input_type, filename, test_name) \
+	EXPECTED_TEST_FN(1, function, input_type, filename, test_name)
 
-#define EXPECTED_TEST_FN(VALUE, FUNC, INPUT_TYPE, FILENAME, TEST_NAME) \
-	void FUNC##_##TEST_NAME##_test () { \
+#define EXPECTED_TEST_FN(expected, function, input_type, filename, test_name) \
+	void function##_##test_name##_test () { \
 		int i, passed, output; \
-		INPUT_TYPE input; \
-		FILE *test_fp = fopen(_to_string(data/FILENAME.txt), "r"); \
-		if (test_fp == NULL) { \
-			perror(_to_string(Failed to open FILENAME.txt)); \
-			return; \
-		} \
+		input_type input; \
+		FILE *test_fp; \
+		\
+		_test_file_open(test_fp, filename); \
 		for (i = 0, passed = 0;; i++) { \
-			if (fscanf(test_fp, \
-				"%" _scan_type(INPUT_TYPE), &input) == EOF) break; \
-			output = FUNC(input); \
-			if (output != VALUE) { \
-				printf("at input %" _print_type(INPUT_TYPE) \
-					_to_string(: expected VALUE, got %d\n), input, output); \
-			} else { \
-				passed++; \
-			} \
+			if (fscanf(test_fp, _scan_type(input_type), &input) == EOF) break; \
+			output = function(input); \
+			_test_check(input_type, int, input, expected, output); \
 		} \
 		fclose(test_fp); \
-		printf(_to_string(FUNC TEST_NAME test result: %d\\%d), passed, i); \
-		if (passed == i) { \
-			puts("  \033[32mPassed\033[39m"); \
-		} else { \
-			puts("  \033[31mFailed\033[39m"); \
-		} \
+		_print_test_result(function, test_name, i, passed); \
 	}
 
 
