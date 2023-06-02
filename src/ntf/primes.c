@@ -48,22 +48,22 @@ int mr_prime (uint64_t n)
 	}
 
 	// Does extended Miller–Rabin tests for big values
-	if (!ext_mr_prime_test(n, d, s, 2)) return 0;
-	if (!ext_mr_prime_test(n, d, s, 3)) return 0;
-	if (!ext_mr_prime_test(n, d, s, 5)) return 0;
-	if (!ext_mr_prime_test(n, d, s, 7)) return 0;
-	if (!ext_mr_prime_test(n, d, s, 11)) return 0;
+	if (!mr_prime_test(n, d, s, 2)) return 0;
+	if (!mr_prime_test(n, d, s, 3)) return 0;
+	if (!mr_prime_test(n, d, s, 5)) return 0;
+	if (!mr_prime_test(n, d, s, 7)) return 0;
+	if (!mr_prime_test(n, d, s, 11)) return 0;
 	if (n < 2152302898747) return 1;
-	if (!ext_mr_prime_test(n, d, s, 13)) return 0;
+	if (!mr_prime_test(n, d, s, 13)) return 0;
 	if (n < 3474749660383) return 1;
-	if (!ext_mr_prime_test(n, d, s, 17)) return 0;
+	if (!mr_prime_test(n, d, s, 17)) return 0;
 	if (n < 341550071728321) return 1;
-	if (!ext_mr_prime_test(n, d, s, 19)) return 0;
-	if (!ext_mr_prime_test(n, d, s, 23)) return 0;
+	if (!mr_prime_test(n, d, s, 19)) return 0;
+	if (!mr_prime_test(n, d, s, 23)) return 0;
 	if (n < 3825123056546413051) return 1;
-	if (!ext_mr_prime_test(n, d, s, 29)) return 0;
-	if (!ext_mr_prime_test(n, d, s, 31)) return 0;
-	if (!ext_mr_prime_test(n, d, s, 37)) return 0;
+	if (!mr_prime_test(n, d, s, 29)) return 0;
+	if (!mr_prime_test(n, d, s, 31)) return 0;
+	if (!mr_prime_test(n, d, s, 37)) return 0;
 	return 1;
 }
 
@@ -74,7 +74,7 @@ int ef_prime (uint64_t n)
 	return mr_prime(n);
 }
 
-/* Tests n with simple modulo exp algorithm (m^2 <= ULONG_MAX) */
+
 int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a) 
 {
 	uint64_t base;
@@ -84,28 +84,11 @@ int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
 	if (base == 1 || base == n-1) return 1;
 
 	for (r = 1; r < s; r++) {
-		base = (base * base) % n;
-		if (base == 1) return 0;
-		if (base == n-1) return 1;
-	}
-
-	return 0;
-}
-
-
-int ext_mr_prime_test(uint64_t n, uint64_t d, uint32_t s, uint32_t a) 
-{
-	uint64_t base;
-	uint32_t r;
-
-	base = ext_mod(a, d, n);
-	if (base == 1 || base == n-1) return 1;
-
-	for (r = 1; r < s; r++) {
 		base = mul_mod(base, base, n);
 		if (base == 1) return 0;
 		if (base == n-1) return 1;
 	}
+
 	return 0;
 }
 

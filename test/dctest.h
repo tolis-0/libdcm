@@ -15,6 +15,7 @@
 #define _print_type_int64_t  PRId64
 #define _print_type_int      "d"
 #define _print_type_size_t   "zu"
+#define _print_type_string   "s"
 
 #define _scan_type(type) "%" _scan_type_##type
 #define _scan_type_uint32_t  SCNu32
@@ -150,6 +151,13 @@
 		fclose(test_fp); \
 		_print_test_result(function, test_name, i, passed); \
 	}
+
+
+
+/* dctest.c */
+uint64_t rand_bit(uint64_t bits);
+void set_rand();
+
 
 
 #endif // _DCTEST_H

@@ -37,7 +37,7 @@ int main ()
 	mr_prime_strps_test(); 	// Strong pseudoprimes to bases 2, 3, 5 and 7.
 	mr_prime_p2_2_test(); 	// Primes of form p^2-2, where p is prime.
 	mr_prime_palb24_test(); // Palindromic primes in bases 2 and 4.
-	//mr_prime_sigtp_test(); 	// 64bit of A272061 in oeis (Fails above 63bit)
+	mr_prime_sigtp_test(); 	// 64bit of A272061 in oeis (Fails above 63bit)
 
 	return 0;
 }

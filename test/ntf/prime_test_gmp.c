@@ -1,27 +1,17 @@
-#include <stdlib.h>
 #include <stdint.h>
-#include <time.h>
-#include <math.h>
-#include <stdio.h>
 #include <gmp.h>
 #include "../dctest.h"
 
 void mr_prime_gmp_test (uint64_t total, uint64_t bits) {
-	uint64_t i, j, passed, input, rand_num;
+	uint64_t i, passed, input;
 	int output, expected;
 	mpz_t gmp_input;
 
-	srand(clock());
+	set_rand();
 	mpz_init(gmp_input);
 
 	for (i = 0, passed = 0; i < total;) {
-		
-		for (input = 0, j = 0; j < 5; j++){
-			input <<= 15;
-			rand_num = 0x7FFF & rand();
-			input |= rand_num;
-		}
-		input &= 0xFFFFFFFFFFFFFFFF >> (64 - bits);
+		input = rand_bit(bits);
 		input |= 1;
 		mpz_set_ui(gmp_input, input);
 
@@ -40,7 +30,7 @@ int main ()
 {
 	int test;
 
-	for (test = 54; test < 64; test++) {
+	for (test = 54; test <= 64; test++) {
 		mr_prime_gmp_test(50000, test);
 	}
 
