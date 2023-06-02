@@ -29,8 +29,12 @@
 #define TEST_PASSED "\033[32mPassed\033[39m"
 #define TEST_FAILED "\033[31mFailed\033[39m"
 #define _print_test_result(function, test_name, all, passed) \
+	_print_test_result2(function, test_name, all, passed, )
+
+#define _print_test_result2(function, test_name, all, passed, optional_text, ...) \
 	do { \
-		printf(_to_string(function test_name test result: %d\\%d), passed, all); \
+		printf(_to_string(function test_name) optional_text \
+			" test result: %1$d\\%2$d", passed, all, ##__VA_ARGS__); \
 		if (passed == i) { \
 			puts("  " TEST_PASSED); \
 		} else { \

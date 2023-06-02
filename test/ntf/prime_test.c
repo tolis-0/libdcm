@@ -17,7 +17,8 @@ TRUE_TEST_FN(mr_prime, uint64_t, b049002, p2_2);
 TRUE_TEST_FN(mr_prime, uint64_t, b056130, palb24);
 TRUE_TEST_FN(mr_prime, uint64_t, b272061, sigtp);
 
-int main () {
+int main () 
+{
 	int8_t *isprime_array;
 
 	mr_prime_sequence_test();
@@ -38,4 +39,5 @@ int main () {
 	mr_prime_palb24_test(); // Palindromic primes in bases 2 and 4.
 	//mr_prime_sigtp_test(); 	// 64bit of A272061 in oeis (Fails above 63bit)
 
+	return 0;
 }
