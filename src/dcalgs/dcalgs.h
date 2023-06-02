@@ -17,9 +17,9 @@
 	FT_AND_LT_BS(1, 0, var, start, end, !(condition))
 
 #define FT_AND_LT_BS(is_lt, is_ft, var, start, end, condition) \
-	var = ((start) + (end))/2; \
-	for (int64_t var##_r = (start), var##_l = (end); \
-		(var##_r < var##_l && (var = (var##_r + var##_l)/2 + is_lt, 1)) \
+	var = ((start) < 0 && (end) > 0) ? 0 : (start) + ((end) - (start))/2; \
+	for (typeof(var) var##_r = (start), var##_l = (end); \
+		(var##_r < var##_l && (var = var##_r + (var##_l - var##_r)/2 + is_lt, 1)) \
 		|| ((var == var##_r) ? 0 : (var = var##_r, 1)); \
 		(condition) ? (var##_l = var - is_lt) : (var##_r = var + is_ft))
 
