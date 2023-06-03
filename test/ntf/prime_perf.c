@@ -1,7 +1,8 @@
-#include "../dctest.h"
+#include <stdint.h>
 #include <stdlib.h>
+#include "../dctest.h"
 
-void ef_prime_performance (uint64_t total, uint64_t bits) {
+void ef_prime_performance (uint64_t total, uint32_t bits) {
 	uint64_t i, *input;
 	clock_t start, end = 0;
 
@@ -19,7 +20,7 @@ void ef_prime_performance (uint64_t total, uint64_t bits) {
 	end = clock();
 	free(input);
 
-	printf("% 2lubit time: %lfs\n", bits, (double) (end - start)/CLOCKS_PER_SEC);
+	printf("%"PRIu32"bit time: %lfs\n", bits, (double) (end - start)/CLOCKS_PER_SEC);
 }
 
 int main ()

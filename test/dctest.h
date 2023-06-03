@@ -53,9 +53,11 @@
 		printf(_to_string(function test_name) optional_text \
 			" test result: %1$d\\%2$d", passed, all, ##__VA_ARGS__); \
 		if (passed == i) { \
-			printf("  " TEST_PASSED "  Time: %.3lfs\n", (double) (time)/CLOCKS_PER_SEC); \
+			printf("  " TEST_PASSED "  Time: %.3lfs\n", \
+				(double) (time)/CLOCKS_PER_SEC); \
 		} else { \
-			printf("  " TEST_FAILED "  Time: %.3lfs\n", (double) (time)/CLOCKS_PER_SEC); \
+			printf("  " TEST_FAILED "  Time: %.3lfs\n", \
+				(double) (time)/CLOCKS_PER_SEC); \
 		} \
 	} while (0)
 

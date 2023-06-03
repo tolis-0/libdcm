@@ -2,8 +2,9 @@
 #include <gmp.h>
 #include "../dctest.h"
 
-void mul_mod_gmp_test (uint64_t total, uint64_t bits) {
-	uint64_t i, passed, a, b, m, output, expected;
+void mul_mod_gmp_test (int total, uint32_t bits) {
+	int i, passed;
+	uint64_t a, b, m, output, expected;
 	mpz_t gmp_num;
 	char input[70];
 
@@ -20,11 +21,11 @@ void mul_mod_gmp_test (uint64_t total, uint64_t bits) {
 		expected = mpz_mod_ui(gmp_num, gmp_num, m);
 
 		output = mul_mod(a, b, m);
-		snprintf(input, 70, "%llu, %llu, %llu", a, b, m);
+		snprintf(input, 70, "%"PRIu64", %"PRIu64", %"PRIu64, a, b, m);
 		_test_check(string, uint64_t, input, expected, output);
 	}
 
-	_print_test_result2(mul_mod, gmp, i, passed, " %3$dbit", bits);
+	_print_test_result2(mul_mod, gmp, i, passed, " %3$"PRIu32"bit", bits);
 }
 
 int main () 

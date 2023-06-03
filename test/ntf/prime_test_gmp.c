@@ -2,15 +2,15 @@
 #include <gmp.h>
 #include "../dctest.h"
 
-void mr_prime_gmp_test (uint64_t total, uint64_t bits) {
-	uint64_t i, passed, input;
-	int output, expected;
+void mr_prime_gmp_test (int total, uint32_t bits) {
+	int i, passed, output, expected;
+	uint64_t input;
 	mpz_t gmp_input;
 
 	set_rand();
 	mpz_init(gmp_input);
 
-	for (i = 0, passed = 0; i < total;) {
+	for (i = 0, passed = 0; i < total; i++) {
 		input = rand_bit(bits);
 		input |= 1;
 		mpz_set_ui(gmp_input, input);
@@ -20,10 +20,9 @@ void mr_prime_gmp_test (uint64_t total, uint64_t bits) {
 
 		output = mr_prime(input);
 		_test_check(uint64_t, int, input, expected, output);
-		i++;
 	}
 
-	_print_test_result2(mr_prime, gmp, i, passed, " %3$dbit", bits);
+	_print_test_result2(mr_prime, gmp, i, passed, " %3$"PRIu32"bit", bits);
 }
 
 int main () 
