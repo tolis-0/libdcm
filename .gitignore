@@ -2,6 +2,7 @@
 *
 !*/
 !*.*
+!**/Makefile
 
 #Ignore object/library files
 *.o
