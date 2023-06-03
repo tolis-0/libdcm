@@ -1,6 +1,7 @@
 #ifndef _DCTEST_H
 #define _DCTEST_H
 
+#include <time.h>
 #include <stdio.h>
 #include <dcmath.h>
 #include <stdint.h>
@@ -29,6 +30,7 @@
 
 #define TEST_PASSED "\033[32mPassed\033[39m"
 #define TEST_FAILED "\033[31mFailed\033[39m"
+
 #define _print_test_result(function, test_name, all, passed) \
 	_print_test_result2(function, test_name, all, passed, )
 
@@ -42,6 +44,21 @@
 			puts("  " TEST_FAILED); \
 		} \
 	} while (0)
+
+#define _print_test_time(function, test_name, all, passed, time) \
+	_print_test_time2(function, test_name, all, passed, time, )
+
+#define _print_test_time2(function, test_name, all, passed, time, optional_text, ...) \
+	do { \
+		printf(_to_string(function test_name) optional_text \
+			" test result: %1$d\\%2$d", passed, all, ##__VA_ARGS__); \
+		if (passed == i) { \
+			printf("  " TEST_PASSED "  Time: %.3lfs\n", (double) (time)/CLOCKS_PER_SEC); \
+		} else { \
+			printf("  " TEST_FAILED "  Time: %.3lfs\n", (double) (time)/CLOCKS_PER_SEC); \
+		} \
+	} while (0)
+
 
 #define _test_check(in_type, out_type, input, expected, got) \
 	do { \
@@ -107,6 +124,7 @@
 #define SET_TEST_FNS(function, input_type, filename, test_name, start) \
 	void function##_##test_name##_test () { \
 		int i, passed, output, expected; \
+		clock_t before, after; \
 		input_type input, next; \
 		FILE *test_fp; \
 		\
@@ -116,6 +134,7 @@
 			return; \
 		} \
 		input = start; \
+		before = clock(); \
 		for (i = 0, passed = 0;; i++, input++) { \
 			if (input > next) { \
 				if (fscanf(test_fp, _scan_type(input_type), &next) == EOF) break; \
@@ -125,8 +144,9 @@
 			output = function(input); \
 			_test_check(input_type, int, input, expected, output); \
 		} \
+		after = clock(); \
 		fclose(test_fp); \
-		_print_test_result(function, test_name, i, passed); \
+		_print_test_time(function, test_name, i, passed, after - before); \
 	}
 
 

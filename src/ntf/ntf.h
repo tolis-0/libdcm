@@ -10,7 +10,7 @@ int s3_prime (uint64_t n);
 int mr_prime (uint64_t n);
 int ef_prime (uint64_t n);
 int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
-int ext_mr_prime_test(uint64_t n, uint64_t d, uint32_t s, uint32_t a);
+int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
 
 void er_sieve (int8_t *isprime, size_t limit);
 
