@@ -52,9 +52,9 @@ typedef struct {
 } factor_l;
 
 uint16_t factoring_ft (uint32_t n, factor_i *factors, uint32_t *table);
-
 int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, uint32_t *table);
 
+uint64_t gcd (uint64_t m, uint64_t n);
 
 
 /* Malloc Macros */

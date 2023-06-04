@@ -57,3 +57,15 @@ int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, ui
 	}
 	return 0;
 }
+
+uint64_t gcd (uint64_t m, uint64_t n) {
+    uint64_t rem;
+
+    while (n) {
+        rem = m % n;
+        m = n;
+        n = rem;
+    }
+
+    return m;
+}
