@@ -4,7 +4,7 @@
 #include "ntf.h"
 
 
-// Skips multiples of 2 and 3
+/* Skips multiples of 2 and 3 */
 int s3_prime (uint64_t n)
 {
 	uint64_t root, p;
@@ -24,6 +24,8 @@ int s3_prime (uint64_t n)
 	return 1;
 }
 
+
+/* Skips multiples of 2, 3 and 5 but starts with 97 for ef_prime */
 int s5_prime_st97 (uint64_t n)
 {
 	uint64_t root, p;
@@ -48,7 +50,8 @@ int s5_prime_st97 (uint64_t n)
 	return 1;
 }
 
-// Miller–Rabin primality test
+
+/* Miller–Rabin primality test */
 int mr_prime (uint64_t n)
 {
 	uint64_t d;
@@ -109,38 +112,6 @@ int mr_prime (uint64_t n)
 }
 
 
-int ef_prime (uint64_t n)
-{
-	if (n % 2 == 0) return n == 2;
-	if (n % 3 == 0) return n == 3;
-	if (n % 5 == 0) return n == 5;
-	if (n % 7 == 0) return n == 7;
-	if (n % 11 == 0) return n == 11;
-	if (n % 13 == 0) return n == 13;
-	if (n % 17 == 0) return n == 17;
-	if (n % 19 == 0) return n == 19;
-	if (n % 23 == 0) return n == 23;
-	if (n % 29 == 0) return n == 29;
-	if (n % 31 == 0) return n == 31;
-	if (n % 37 == 0) return n == 37;
-	if (n % 41 == 0) return n == 41;
-	if (n % 43 == 0) return n == 43;
-	if (n % 47 == 0) return n == 47;
-	if (n % 53 == 0) return n == 53;
-	if (n % 59 == 0) return n == 59;
-	if (n % 61 == 0) return n == 61;
-	if (n % 67 == 0) return n == 67;
-	if (n % 71 == 0) return n == 71;
-	if (n % 73 == 0) return n == 73;
-	if (n % 79 == 0) return n == 79;
-	if (n % 83 == 0) return n == 83;
-	if (n % 89 == 0) return n == 89;
-
-	if (n < 130000) return s5_prime_st97(n);
-	return mr_prime(n);
-}
-
-
 /* Returns 1 if n is definitely composite */
 int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
 {
@@ -171,13 +142,170 @@ int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
 	if (base == 1 || base == n-1) return 0;
 
 	for (r = 1; r < s; r++) {
-		base = (((unsigned __int128) base * base) % n);
+		base = mul_mod(base, base, n);
 		if (base == 1) return 1;
 		if (base == n-1) return 0;
 	}
 
 	return 1;
 }
+
+
+int jacobi (uint64_t a, uint64_t n)
+{
+	int res;
+	uint64_t rem;
+
+	for (res = 1, a %= n; a; a %= n) {
+
+		while (a % 2 == 0) {
+			a >>= 1;
+			rem = n % 8;
+			if (rem == 3 || rem == 5) res = -res;
+		}
+
+		rem = n;
+		n = a;
+		a = rem;
+
+		if (a % 4 == 3 && n % 4 == 3) res = -res;
+	}
+
+	if (n == 1) return res;
+	return 0;
+}
+
+
+/* test for P = 1 */
+int lucas_prime_test_1 (uint64_t n, uint64_t Q)
+{
+	uint64_t bit, U0, U1, Utmp1, Utmp2;
+
+	bit = 0x8000000000000000;
+	while ((n & bit) == 0) bit >>= 1;
+
+	U0 = 0, U1 = 1;
+	if (n < 4294967295) {
+		for (; bit; bit >>= 1) {
+			if (n & bit) {
+				Utmp1 = (U1 * U1) % n;
+				Utmp2 = (U0 * Q) % n;
+				U1 = (Utmp2 * ((2 * U1) % n) + Utmp1) % n;
+				U0 = (Utmp1 + Utmp2 * U0) % n;
+			} else {
+				Utmp1 = (U0 * U0) % n;
+				Utmp2 = (U1 * U0) % n;
+				Utmp2 = 2 * Utmp2 + (n - Utmp1);
+				U1 = ((U1 * U1) % n + Q * Utmp1) % n;
+				U0 = Utmp2 % n;
+			}
+		}
+	} else {
+		for (; bit; bit >>= 1) {
+			if (n & bit) {
+				Utmp1 = mul_mod(U1, U1, n);
+				Utmp2 = mul_mod(U0, Q, n);
+				U1 = mul_mod(2, U1, n);
+				U1 = ((unsigned __int128) Utmp2 * U1 + Utmp1) % n;
+				U0 = (Utmp1 + (unsigned __int128) Utmp2 * U0) % n;
+			} else {
+				Utmp1 = mul_mod(U0, U0, n);
+				Utmp2 = mul_mod(U1, U0, n);
+				U0 = (2 * (unsigned __int128) Utmp2 + (n - Utmp1)) % n;
+				U1 = (mul_mod(U1, U1, n) + 
+					Q * (unsigned __int128) Utmp1) % n;
+			}
+		}
+	}
+
+	return U1 == 0;
+}
+
+
+int bpsw_prime (uint64_t n)
+{
+	uint64_t d, s, root, negQ;
+	int64_t tmp;
+	int32_t D;
+
+	if (n < 2) return 0;
+	if (n == 2 || n == 5) return 1;
+	if (n % 2 == 0) return 0;
+
+	for (d = n - 1, s = 0; d % 2 == 0; d >>= 1, s++);
+
+	/* Miller–Rabin test base 2 */
+	if (n < 4294967295) {
+		if (mr_prime_test(n, d, s, 2)) return 0;
+	} else {
+		if (ext_mr_prime_test(n, d, s, 2)) return 0;
+	}
+
+	/* find D in sequence 5, -7, 9, -11,... */
+	if (jacobi(5, n) == -1) 	{D = 5;   goto found_D;}
+	if (jacobi(n-7, n) == -1) 	{D = -7;  goto found_D;}
+	if (jacobi(9, n) == -1) 	{D = 9;   goto found_D;}
+	if (jacobi(n-11, n) == -1)	{D = -11; goto found_D;}
+	if (jacobi(13, n) == -1) 	{D = 13;  goto found_D;}
+	if (jacobi(n-15, n) == -1) 	{D = -15; goto found_D;}
+
+	root = (uint64_t) floorl(sqrtl(n));
+	if (root * root == n) return 0;
+
+	D = 17;
+
+try_more_jacobi:
+	if (jacobi(D, n) == -1) goto found_D;
+	D = - D - 2;
+	if (jacobi(n+D, n) == -1) goto found_D;
+	D = - D + 2;
+	goto try_more_jacobi;
+
+found_D:
+	tmp = (1 - D) / 4;
+	if (tmp > 0) {
+		if (n % tmp == 0) return 0;
+		negQ = n - tmp;
+	} else {
+		negQ = -tmp;
+	}
+
+	return lucas_prime_test_1(n, negQ);
+}
+
+
+int ef_prime (uint64_t n)
+{
+	if (n % 2 == 0) return n == 2;
+	if (n % 3 == 0) return n == 3;
+	if (n % 5 == 0) return n == 5;
+	if (n % 7 == 0) return n == 7;
+	if (n % 11 == 0) return n == 11;
+	if (n % 13 == 0) return n == 13;
+	if (n % 17 == 0) return n == 17;
+	if (n % 19 == 0) return n == 19;
+	if (n % 23 == 0) return n == 23;
+	if (n % 29 == 0) return n == 29;
+	if (n % 31 == 0) return n == 31;
+	if (n % 37 == 0) return n == 37;
+	if (n % 41 == 0) return n == 41;
+	if (n % 43 == 0) return n == 43;
+	if (n % 47 == 0) return n == 47;
+	if (n % 53 == 0) return n == 53;
+	if (n % 59 == 0) return n == 59;
+	if (n % 61 == 0) return n == 61;
+	if (n % 67 == 0) return n == 67;
+	if (n % 71 == 0) return n == 71;
+	if (n % 73 == 0) return n == 73;
+	if (n % 79 == 0) return n == 79;
+	if (n % 83 == 0) return n == 83;
+	if (n % 89 == 0) return n == 89;
+
+	if (n < 130000) return s5_prime_st97(n);
+	if (n < 17000000000) return mr_prime(n);
+	return bpsw_prime(n);
+}
+
 
 
 void er_sieve (int8_t *isprime, size_t limit)

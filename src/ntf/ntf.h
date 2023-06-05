@@ -11,6 +11,7 @@ int mr_prime (uint64_t n);
 int ef_prime (uint64_t n);
 int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
 int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
+int bpsw_prime (uint64_t n);
 
 void er_sieve (int8_t *isprime, size_t limit);
 
@@ -24,7 +25,8 @@ void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int prim
 /* ntf/modulo.c */
 uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
-uint64_t mul_mod (uint64_t a, uint64_t b, uint64_t m);
+
+#define mul_mod(a, b, m) (((unsigned __int128) (a) * (b)) % (m))
 
 
 
