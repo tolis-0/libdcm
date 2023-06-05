@@ -142,7 +142,7 @@ int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
 	if (base == 1 || base == n-1) return 0;
 
 	for (r = 1; r < s; r++) {
-		base = mul_mod(base, base, n);
+		fast_mul_mod(base, base, base, n);
 		if (base == 1) return 1;
 		if (base == n-1) return 0;
 	}
@@ -203,17 +203,17 @@ int lucas_prime_test_1 (uint64_t n, uint64_t Q)
 	} else {
 		for (; bit; bit >>= 1) {
 			if (n & bit) {
-				Utmp1 = mul_mod(U1, U1, n);
-				Utmp2 = mul_mod(U0, Q, n);
-				U1 = mul_mod(2, U1, n);
-				U1 = ((unsigned __int128) Utmp2 * U1 + Utmp1) % n;
-				U0 = (Utmp1 + (unsigned __int128) Utmp2 * U0) % n;
+				fast_mul_mod(Utmp1, U1, U1, n);
+				fast_mul_mod(Utmp1, U0, Q, n);
+				fast_mul_mod(U1, 2, U1, n);
+				fast_muladd_mod(U1, Utmp2, U1, Utmp1, n);
+				fast_muladd_mod(U0, Utmp2, U0, Utmp1, n);
 			} else {
-				Utmp1 = mul_mod(U0, U0, n);
-				Utmp2 = mul_mod(U1, U0, n);
-				U0 = (2 * (unsigned __int128) Utmp2 + (n - Utmp1)) % n;
-				U1 = (mul_mod(U1, U1, n) + 
-					Q * (unsigned __int128) Utmp1) % n;
+				fast_mul_mod(Utmp1, U0, U0, n);
+				fast_mul_mod(Utmp2, U1, U0, n);
+				fast_muladd_mod(U0, Utmp2, 2, n - Utmp1, n);
+				fast_mul_mod(U1, U1, U1, n);
+				fast_muladd_mod(U1, Utmp1, Q, U1, n);
 			}
 		}
 	}

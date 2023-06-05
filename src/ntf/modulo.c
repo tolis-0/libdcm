@@ -19,10 +19,9 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo)
 	uint64_t x = 1;
 
 	for (base %= modulo; exp; exp >>= 1){
-		if (exp & 1) x = mul_mod(x, base, modulo);
-		base = mul_mod(base, base, modulo);
+		if (exp & 1) fast_mul_mod(x, x, base, modulo);
+		fast_mul_mod(base, base, base, modulo);
 	}
 
 	return x;
 }
-

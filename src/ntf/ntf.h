@@ -26,7 +26,30 @@ void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int prim
 uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 
-#define mul_mod(a, b, m) (((unsigned __int128) (a) * (b)) % (m))
+#define mul_mod(a, b, m) mul_modadd(a, b, 0, m)
+#define mul_modadd(a, b, c, m)
+	(((unsigned __int128) (a) * (b) + (c)) % (uint64_t) (m))
+
+#ifdef __x86_64__
+/* rem = (a * b + d) % m */
+#define fast_mul_mod(rem, a, b, m) fast_muladd_mod(rem, a, b, 0, m)
+
+#define fast_muladd_mod(rem, a, b, d, m) \
+	do { \
+		unsigned __int128 c; \
+		uint64_t result, low, high; \
+		c = (unsigned __int128) (a) * (b) + (d); \
+		low = c & 0xFFFFFFFFFFFFFFFF; \
+		high = c >> 64; \
+		__asm__("divq %[v]\n\t" \
+			: "=a"(result), "=d"(rem) \
+			: [v] "r"(m), "a"(low), "d"(high)); \
+	} while (0)
+
+#else
+#define fast_mul_mod(rem, a, b, m) rem = mul_mod(a, b, m)
+#define fast_muladd_mod(rem, a, b, d, m) rem = mul_modadd(a, b, d, m)
+#endif
 
 
 
