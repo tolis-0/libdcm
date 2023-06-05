@@ -27,7 +27,7 @@ uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 
 #define mul_mod(a, b, m) mul_modadd(a, b, 0, m)
-#define mul_modadd(a, b, c, m)
+#define mul_modadd(a, b, c, m) \
 	(((unsigned __int128) (a) * (b) + (c)) % (uint64_t) (m))
 
 #ifdef __x86_64__
@@ -39,7 +39,7 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 		unsigned __int128 c; \
 		uint64_t result, low, high; \
 		c = (unsigned __int128) (a) * (b) + (d); \
-		low = c & 0xFFFFFFFFFFFFFFFF; \
+		low = c; \
 		high = c >> 64; \
 		__asm__("divq %[v]\n\t" \
 			: "=a"(result), "=d"(rem) \
