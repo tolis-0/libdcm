@@ -1,5 +1,5 @@
 CC = gcc
-LFLAGS = -g -shared
+LFLAGS = -g -fPIC -shared
 
 SOURCEDIR = src src/nstrings src/ntf src/dcalgs
 LIBDIR = /usr/local/lib/libdcm/

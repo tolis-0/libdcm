@@ -1,12 +1,16 @@
-#Ignore all except directories and files with extensions
+# Ignore all except directories and files with extensions
 *
 !*/
 !*.*
 !**/Makefile
 
-#Ignore object/library files
+# Ignore object/library files
 *.o
 *.so
 *.a
 *.la
+
+# Ignore perf output files
+!**/perf.data
+!**/perf.data.old
 

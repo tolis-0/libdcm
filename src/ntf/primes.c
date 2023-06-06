@@ -150,29 +150,43 @@ int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
 	return 1;
 }
 
-
-int jacobi (uint64_t a, uint64_t n)
+// bpsw has to check 5 and 11 because it returns 0
+int32_t find_D_jacobi (uint64_t n)
 {
-	int res;
-	uint64_t rem;
+	uint64_t root, p, a, rem;
+	uint32_t D;
+	int32_t res;
 
-	for (res = 1, a %= n; a; a %= n) {
-
-		while (a % 2 == 0) {
-			a >>= 1;
-			rem = n % 8;
-			if (rem == 3 || rem == 5) res = -res;
+	for (D = 5;; D += 2) {
+		if (D == 19) {
+			root = (uint64_t) floorl(sqrtl(n));
+			if (root * root == n) return 0;
 		}
 
-		rem = n;
-		n = a;
-		a = rem;
+		res = 1;
+		a = n % D;
+		p = D;
 
-		if (a % 4 == 3 && n % 4 == 3) res = -res;
+		for (; a; a %= p) {
+
+			while (a % 2 == 0) {
+				a >>= 1;
+				rem = p % 8;
+				if (rem == 3 || rem == 5) res = -res;
+			}
+
+			rem = p;
+			p = a;
+			a = rem;
+
+			if (a % 4 == 3 && p % 4 == 3) res = -res;
+		}
+
+		if (res == -1 && p == 1) break;
+		if (p != 1) return 0;
 	}
 
-	if (n == 1) return res;
-	return 0;
+	return (D & 2) ? - D : D;
 }
 
 
@@ -224,15 +238,24 @@ int lucas_prime_test_1 (uint64_t n, uint64_t Q)
 
 int bpsw_prime (uint64_t n)
 {
-	uint64_t d, s, root, negQ;
+	uint64_t d, s, negQ;
 	int64_t tmp;
 	int32_t D;
 
 	if (n < 2) return 0;
-	if (n == 2 || n == 5) return 1;
+	if (n == 2 || n == 11) return 1;
 	if (n % 2 == 0) return 0;
 
 	for (d = n - 1, s = 0; d % 2 == 0; d >>= 1, s++);
+
+	if (d < (1UL << s)) {
+		if (n == 5) return 1;
+		D = find_D_jacobi(n);
+		if (D == 0) return 0;
+		if (D < 0) D += n;
+		if (ext_mod(D, (n-1)/2, n) == n - 1) return 1;
+		return 0;
+	}
 
 	/* Miller–Rabin test base 2 */
 	if (n < 4294967295) {
@@ -241,27 +264,9 @@ int bpsw_prime (uint64_t n)
 		if (ext_mr_prime_test(n, d, s, 2)) return 0;
 	}
 
-	/* find D in sequence 5, -7, 9, -11,... */
-	if (jacobi(5, n) == -1) 	{D = 5;   goto found_D;}
-	if (jacobi(n-7, n) == -1) 	{D = -7;  goto found_D;}
-	if (jacobi(9, n) == -1) 	{D = 9;   goto found_D;}
-	if (jacobi(n-11, n) == -1)	{D = -11; goto found_D;}
-	if (jacobi(13, n) == -1) 	{D = 13;  goto found_D;}
-	if (jacobi(n-15, n) == -1) 	{D = -15; goto found_D;}
+	D = find_D_jacobi(n);
+	if (D == 0) return 0;
 
-	root = (uint64_t) floorl(sqrtl(n));
-	if (root * root == n) return 0;
-
-	D = 17;
-
-try_more_jacobi:
-	if (jacobi(D, n) == -1) goto found_D;
-	D = - D - 2;
-	if (jacobi(n+D, n) == -1) goto found_D;
-	D = - D + 2;
-	goto try_more_jacobi;
-
-found_D:
 	tmp = (1 - D) / 4;
 	if (tmp > 0) {
 		if (n % tmp == 0) return 0;
@@ -302,7 +307,7 @@ int ef_prime (uint64_t n)
 	if (n % 89 == 0) return n == 89;
 
 	if (n < 130000) return s5_prime_st97(n);
-	if (n < 17000000000) return mr_prime(n);
+	if (n < 6074001000) return mr_prime(n);
 	return bpsw_prime(n);
 }
 

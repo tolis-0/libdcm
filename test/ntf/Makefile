@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g3 -Wall -Wextra
+CFLAGS = -g -g3 -ggdb -Wall -Wextra
 LIBFLAGS = -lm -ldcm -lgmp
 
 SOURCEF = $(wildcard *.c)

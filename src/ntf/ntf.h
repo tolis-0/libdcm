@@ -39,11 +39,14 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 		unsigned __int128 c; \
 		uint64_t result, low, high; \
 		c = (unsigned __int128) (a) * (b) + (d); \
-		low = c; \
-		high = c >> 64; \
-		__asm__("divq %[v]\n\t" \
-			: "=a"(result), "=d"(rem) \
-			: [v] "r"(m), "a"(low), "d"(high)); \
+		if (c < m) rem = c; \
+		else { \
+			low = c; \
+			high = c >> 64; \
+			__asm__("divq %[v]" \
+				: "=a"(result), "=d"(rem) \
+				: [v] "r"(m), "a"(low), "d"(high)); \
+		} \
 	} while (0)
 
 #else
@@ -80,6 +83,8 @@ uint16_t factoring_ft (uint32_t n, factor_i *factors, uint32_t *table);
 int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, uint32_t *table);
 
 uint64_t gcd (uint64_t m, uint64_t n);
+uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
+
 
 
 /* Malloc Macros */

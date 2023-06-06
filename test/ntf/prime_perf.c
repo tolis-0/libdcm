@@ -58,10 +58,10 @@ int main ()
 	for (test = 3; test <= 64; test++)
 		ef_prime_performance(100000, test);
 	/*for (test = 3; test <= 64; test++)
-		mr_prime_performance(100000, test);
-	for (test = 3; test <= 64; test++)
-		bpsw_prime_performance(100000, test);
-	for (test = 3; test <= 64; test++)
+		mr_prime_performance(100000, test);*/
+	/*for (test = 3; test <= 64; test++)
+		bpsw_prime_performance(100000, test);*/
+	/*for (test = 3; test <= 64; test++)
 		gmp_performance(100000, test);*/
 
 	return 0;
