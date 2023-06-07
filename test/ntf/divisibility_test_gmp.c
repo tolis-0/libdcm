@@ -24,7 +24,7 @@ void gcd_gmp_test (int total, uint32_t bits) {
 		expected = mpz_get_ui(gmp_out);
 
 		output = ext_gcd(a, b, &s, &t);
-		if ((int64_t) b*s + (int64_t) a*t != (int64_t) output) 
+		if ((__int128) b*t + (__int128) a*s != (__int128) output) 
 			printf("a: %lu, b: %lu, s: %ld, t: %ld,  out: %lu\n", a,b,s,t,output);
 		snprintf(input, 50, "%"PRIu64", %"PRIu64, a, b);
 		_test_check(string, uint64_t, input, expected, output);
@@ -37,8 +37,8 @@ int main ()
 {
 	int test;
 
-	for (test = 10; test <= 10; test++) {
-		gcd_gmp_test(10, test);
+	for (test = 10; test <= 64; test++) {
+		gcd_gmp_test(100000, test);
 	}
 
 	return 0;

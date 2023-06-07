@@ -73,7 +73,8 @@ uint64_t gcd (uint64_t a, uint64_t b)
 
 uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
 {
-	int64_t q, old_r, new_r, old_s, new_s, tmp;
+	uint64_t q, old_r, new_r;
+	int64_t old_s, new_s, tmp;
 
 	new_s = 0, old_s = 1, new_r = b, old_r = a;
 
@@ -88,8 +89,17 @@ uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
 		old_s = tmp;
 	}
 
-	if (b) t[0] = (old_r - old_s * a) / b;
-	else t[0] = 0;
+	if (b) {
+		if (a > 4294967294 || b > 4294967294) {
+			__int128 tmp = (__int128) old_r - old_s * (__int128) a;
+			t[0] = tmp / b;
+		} else {
+			tmp = (int64_t) old_r - old_s * (int64_t) a;
+			t[0] = tmp / (int64_t) b;
+		}
+	} else {
+		t[0] = 0;
+	}
 
 	s[0] = old_s;
 
