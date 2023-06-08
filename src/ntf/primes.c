@@ -219,13 +219,13 @@ int lucas_prime_test_1 (uint64_t n, uint64_t Q)
 			if (n & bit) {
 				fast_mul_mod(Utmp1, U1, U1, n);
 				fast_mul_mod(Utmp1, U0, Q, n);
-				fast_mul_mod(U1, 2, U1, n);
+				fast_mul_mod(U1, 2UL, U1, n);
 				fast_muladd_mod(U1, Utmp2, U1, Utmp1, n);
 				fast_muladd_mod(U0, Utmp2, U0, Utmp1, n);
 			} else {
 				fast_mul_mod(Utmp1, U0, U0, n);
 				fast_mul_mod(Utmp2, U1, U0, n);
-				fast_muladd_mod(U0, Utmp2, 2, n - Utmp1, n);
+				fast_muladd_mod(U0, Utmp2, 2UL, n - Utmp1, n);
 				fast_mul_mod(U1, U1, U1, n);
 				fast_muladd_mod(U1, Utmp1, Q, U1, n);
 			}
@@ -253,7 +253,11 @@ int bpsw_prime (uint64_t n)
 		D = find_D_jacobi(n);
 		if (D == 0) return 0;
 		if (D < 0) D += n;
-		if (ext_mod(D, (n-1)/2, n) == n - 1) return 1;
+		if (n < 4294967295){
+			if (exp_mod(D, (n-1)/2, n) == n - 1) return 1;
+		} else {
+			if (ext_mod(D, (n-1)/2, n) == n - 1) return 1;
+		}
 		return 0;
 	}
 

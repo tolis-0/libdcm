@@ -38,11 +38,14 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 	do { \
 		unsigned __int128 c; \
 		uint64_t result, low, high; \
-		c = (unsigned __int128) (a) * (b) + (d); \
-		if (c < m) rem = c; \
-		else { \
-			low = c; \
-			high = c >> 64; \
+		c = (unsigned __int128) ((a) > m ? ((a) % m) : (a)) * \
+			((b) > m ? ((b) % m) : (b)) + (d); \
+		high = c >> 64; \
+		low = c; \
+		if (high == 0) { \
+			if (low >= m) rem = low % m; \
+			else rem = low; \
+		} else { \
 			__asm__("divq %[v]" \
 				: "=a"(result), "=d"(rem) \
 				: [v] "r"(m), "a"(low), "d"(high)); \
@@ -54,6 +57,37 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 #define fast_muladd_mod(rem, a, b, d, m) rem = mul_modadd(a, b, d, m)
 #endif
 
+#define montgomery_mul_mod(rem, a, b, rbit, r_1, n, n_) \
+	do { \
+		unsigned __int128 t, m; \
+		t = (unsigned __int128) (a) * (b); \
+		m = ((t & (r_1)) * (n_)) & (r_1); \
+		rem = (t + m * (n)) >> (rbit); \
+		if (rem >= (n)) rem -= (n); \
+	} while (0)
+
+#define montgomery_mul_mod_bit64(rem, a, b, n, n_) \
+	do { \
+		unsigned __int128 t, mn, rem128; \
+		uint64_t m, t_0; \
+		t = (unsigned __int128) (a) * (b); \
+		m = (t & 0xFFFFFFFFFFFFFFFF); \
+		m = (((unsigned __int128) m * n_) & 0xFFFFFFFFFFFFFFFF); \
+		mn = (unsigned __int128) m * (n); \
+		t_0 = (t & 1); \
+		t >>= 1; mn >>= 1; \
+		if (t_0) { \
+			rem128 = (t + mn + 1) >> 63; \
+		} else { \
+			rem128 = (t + mn) >> 63; \
+		} \
+		t_0 = rem128 >> 64; \
+		if (t_0) rem = rem128 - n; \
+		else { \
+			rem = rem128; \
+			if (rem >= (n)) rem -= (n); \
+		} \
+	} while (0)
 
 
 /* ntf/fibonacci.c*/
