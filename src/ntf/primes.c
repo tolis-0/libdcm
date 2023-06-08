@@ -311,7 +311,7 @@ int ef_prime (uint64_t n)
 	if (n % 89 == 0) return n == 89;
 
 	if (n < 130000) return s5_prime_st97(n);
-	if (n < 6074001000) return mr_prime(n);
+	if (n < 4000000000) return mr_prime(n);
 	return bpsw_prime(n);
 }
 

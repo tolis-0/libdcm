@@ -23,8 +23,8 @@ void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int prim
 
 
 /* ntf/modulo.c */
-uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t modulo);
-uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
+uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t n);
+uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n);
 
 #define mul_mod(a, b, m) mul_modadd(a, b, 0, m)
 #define mul_modadd(a, b, c, m) \
@@ -71,16 +71,12 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t modulo);
 		unsigned __int128 t, mn, rem128; \
 		uint64_t m, t_0; \
 		t = (unsigned __int128) (a) * (b); \
-		m = (t & 0xFFFFFFFFFFFFFFFF); \
-		m = (((unsigned __int128) m * n_) & 0xFFFFFFFFFFFFFFFF); \
+		m = (((t & 0xFFFFFFFFFFFFFFFF) * n_) & 0xFFFFFFFFFFFFFFFF); \
 		mn = (unsigned __int128) m * (n); \
 		t_0 = (t & 1); \
-		t >>= 1; mn >>= 1; \
-		if (t_0) { \
-			rem128 = (t + mn + 1) >> 63; \
-		} else { \
-			rem128 = (t + mn) >> 63; \
-		} \
+		t >>= 1, mn >>= 1; \
+		rem128 = (t + mn) >> 63; \
+		if (t_0) rem128++; \
 		t_0 = rem128 >> 64; \
 		if (t_0) rem = rem128 - n; \
 		else { \

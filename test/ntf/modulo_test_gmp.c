@@ -19,8 +19,8 @@
 			a = rand_bit(64); \
 			b = rand_bit(64); \
 			do { \
-				m = rand_bit(bits) | 1; \
-			} while (m < 2); \
+				m = rand_bit(bits); \
+			} while (m == 0); \
 			\
 			mpz_set_ui(gmp_a, a); \
 			mpz_set_ui(gmp_b, b); \

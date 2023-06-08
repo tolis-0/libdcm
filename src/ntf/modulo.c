@@ -1,13 +1,13 @@
 #include <stdint.h>
 #include "ntf.h"
 
-uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t modulo) 
+uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t n) 
 {
 	uint64_t x = 1;
 
-	for (base %= modulo; exp != 0; exp >>= 1){
-		if (exp & 1) x = ( x * base) % modulo;
-		base = (base * base) % modulo;
+	for (base %= n; exp != 0; exp >>= 1){
+		if (exp & 1) x = ( x * base) % n;
+		base = (base * base) % n;
 	}
 
 	return x;
@@ -19,6 +19,17 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n)
 	uint64_t x, rbit, r_1, un_i;
 	int64_t tmp, n_i;
 	
+	if ((n & 1) == 0) {
+		x = 1;
+
+		for (base %= n; exp; exp >>= 1){
+			if (exp & 1) fast_mul_mod(x, x, base, n);
+			fast_mul_mod(base, base, base, n);
+		}
+
+		return x;
+	}
+
 	r_1 = 0x8000000000000000, rbit = 63;
 	while ((r_1 & n) == 0) rbit--, r_1 >>= 1;
 	rbit++;
