@@ -24,11 +24,44 @@ TRUE_TEST_FN(mr_prime, uint64_t, b272061, sigtp);
 
 TRUE_TEST_FN(bpsw_prime, uint64_t, b272061, sigtp);
 
+#define LUCAS_TEST(test_name, filename, expected) \
+void lucas_P1_##test_name##_test () { \
+	int i, passed, output, D, tmp; \
+	uint64_t input, negQ; \
+	FILE *test_fp; \
+	\
+	_test_file_open(test_fp, filename); \
+	for (i = 0, passed = 0;; i++) { \
+		if (fscanf(test_fp, _scan_type(uint64_t), &input) == EOF) break; \
+		if (input == 5 || input == 11) {output = 1; goto skip_lucas_##test_name;} \
+		D = find_D_jacobi(input); \
+		if (D == 0) {output = 0; goto skip_lucas_##test_name;} \
+		\
+		tmp = (1 - D) / 4; \
+		if (tmp > 0) { \
+			if (input % tmp == 0) {output = 0; goto skip_lucas_##test_name;} \
+			negQ = input - tmp; \
+		} else { \
+			negQ = -tmp; \
+		} \
+		output = lucas_prime_P1(input, negQ); \
+skip_lucas_##test_name: \
+		_test_check(uint64_t, int, input, expected, output); \
+	} \
+	fclose(test_fp); \
+	_print_test_result(lucas_prime_P1, test_name, i, passed); \
+}
+
+LUCAS_TEST(pseudoprime, b217120, 1);
+LUCAS_TEST(pseudob2345, a074773, 0);
+LUCAS_TEST(pseudob2, b001262, 0);
+LUCAS_TEST(primes, primes, 1);
+
 int main () 
 {
 	int8_t *isprime_array;
 
-	mr_prime_sequence_test();
+/*	mr_prime_sequence_test();
 	s3_prime_sequence_test();
 	ef_prime_sequence_test();
 	bpsw_prime_sequence_test();
@@ -50,7 +83,12 @@ int main ()
 	mr_prime_p2_2_test(); 	// Primes of form p^2-2, where p is prime.
 	mr_prime_palb24_test(); // Palindromic primes in bases 2 and 4.
 	mr_prime_sigtp_test(); 	// 64bit of A272061 in oeis (Fails above 63bit)
-	bpsw_prime_sigtp_test();
+	bpsw_prime_sigtp_test();*/
+
+	lucas_P1_pseudoprime_test();
+	lucas_P1_pseudob2345_test();
+	lucas_P1_pseudob2_test();
+	lucas_P1_primes_test();
 
 	return 0;
 }

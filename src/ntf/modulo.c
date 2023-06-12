@@ -17,7 +17,6 @@ uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t n)
 uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n) 
 {
 	uint64_t x, rbit, r_1, un_i;
-	int64_t tmp, n_i;
 	
 	if ((n & 1) == 0) {
 		x = 1;
@@ -30,15 +29,12 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n)
 		return x;
 	}
 
-	r_1 = 0x8000000000000000, rbit = 63;
-	while ((r_1 & n) == 0) rbit--, r_1 >>= 1;
-	rbit++;
+	montgomery_cached(n, &un_i, &rbit);
 
-	if (r_1 == 0x8000000000000000) {
+	if (rbit == 64) {
+
 		x = -n;
 		fast_mul_mod(base, base, x, n);
-		ext_gcd(n, x, &n_i, &tmp);
-		un_i = tmp - n_i;
 
 		for (; exp != 0; exp >>= 1) {
 			if (exp & 1)
@@ -48,12 +44,10 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n)
 
 		montgomery_mul_mod_bit64(x, x, 1, n, un_i);
 	} else {
-		r_1 <<= 1;
+		r_1 = 1ULL << rbit;
 		x = r_1 - n;
-		fast_mul_mod(base, base, x, n);
-		ext_gcd(r_1, n, &tmp, &n_i);
-		if (n_i < 0) un_i = - n_i; else un_i = r_1 - n_i;
 		r_1--;
+		fast_mul_mod(base, base, x, n);
 
 		for (; exp != 0; exp >>= 1) {
 			if (exp & 1)
@@ -65,4 +59,33 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n)
 	}
 
 	return x;
+}
+
+
+void montgomery_cached (uint64_t n, uint64_t *un_i, uint64_t *rbit)
+{
+	static uint64_t cached_n = 0, _un_i, _rbit, _r_1;
+	int64_t tmp, n_i;
+
+	if (n == cached_n) goto mont_cached_return;
+
+	_r_1 = 0x8000000000000000, _rbit = 63;
+	while ((_r_1 & n) == 0) _rbit--, _r_1 >>= 1;
+	_rbit++;
+
+	if (_rbit == 64) {
+		ext_gcd(n, -n, &n_i, &tmp);
+		_un_i = tmp - n_i;
+	} else {
+		_r_1 <<= 1;
+		ext_gcd(_r_1, n, &tmp, &n_i);
+		if (n_i < 0) _un_i = - n_i;
+		else _un_i = _r_1 - n_i;
+	}
+
+	cached_n = n;
+
+mont_cached_return:
+	un_i[0] = _un_i;
+	rbit[0] = _rbit;
 }

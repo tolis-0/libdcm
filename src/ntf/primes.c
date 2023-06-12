@@ -191,9 +191,9 @@ int32_t find_D_jacobi (uint64_t n)
 
 
 /* test for P = 1 */
-int lucas_prime_test_1 (uint64_t n, uint64_t Q)
+int lucas_prime_P1 (uint64_t n, uint64_t Q)
 {
-	uint64_t bit, U0, U1, Utmp1, Utmp2;
+	uint64_t bit, U0, U1, Utmp1, Utmp2, const_2, un_i, rbit;
 
 	bit = 0x8000000000000000;
 	while ((n & bit) == 0) bit >>= 1;
@@ -218,14 +218,14 @@ int lucas_prime_test_1 (uint64_t n, uint64_t Q)
 		for (; bit; bit >>= 1) {
 			if (n & bit) {
 				fast_mul_mod(Utmp1, U1, U1, n);
-				fast_mul_mod(Utmp1, U0, Q, n);
-				fast_mul_mod(U1, 2UL, U1, n);
+				fast_mul_mod(Utmp2, U0, Q, n);
+				fast_mul_mod(U1, 2ULL, U1, n);
 				fast_muladd_mod(U1, Utmp2, U1, Utmp1, n);
 				fast_muladd_mod(U0, Utmp2, U0, Utmp1, n);
 			} else {
 				fast_mul_mod(Utmp1, U0, U0, n);
 				fast_mul_mod(Utmp2, U1, U0, n);
-				fast_muladd_mod(U0, Utmp2, 2UL, n - Utmp1, n);
+				fast_muladd_mod(U0, Utmp2, 2ULL, n - Utmp1, n);
 				fast_mul_mod(U1, U1, U1, n);
 				fast_muladd_mod(U1, Utmp1, Q, U1, n);
 			}
@@ -268,6 +268,7 @@ int bpsw_prime (uint64_t n)
 		if (ext_mr_prime_test(n, d, s, 2)) return 0;
 	}
 
+
 	D = find_D_jacobi(n);
 	if (D == 0) return 0;
 
@@ -279,7 +280,7 @@ int bpsw_prime (uint64_t n)
 		negQ = -tmp;
 	}
 
-	return lucas_prime_test_1(n, negQ);
+	return lucas_prime_P1(n, negQ);
 }
 
 

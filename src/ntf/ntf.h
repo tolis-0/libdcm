@@ -11,6 +11,8 @@ int mr_prime (uint64_t n);
 int ef_prime (uint64_t n);
 int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
 int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
+int32_t find_D_jacobi (uint64_t n);
+int lucas_prime_P1 (uint64_t n, uint64_t Q);
 int bpsw_prime (uint64_t n);
 
 void er_sieve (int8_t *isprime, size_t limit);
@@ -84,6 +86,9 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n);
 			if (rem >= (n)) rem -= (n); \
 		} \
 	} while (0)
+
+void montgomery_cached (uint64_t n, uint64_t *un_i, uint64_t *rbit);
+
 
 
 /* ntf/fibonacci.c*/
