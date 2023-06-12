@@ -222,7 +222,7 @@ int lucas_prime_P1 (uint64_t n, uint64_t Q)
 		U1 = r_1 - n;
 		const_2 = 2ULL * U1;
 		if (const_2 > n) const_2 -= n;
-		fast_mul_mod(Q, Q, r_1, n);
+		fast_mul_mod(Q, Q, U1, n);
 		r_1--;
 
 		for (; bit; bit >>= 1) {
@@ -248,8 +248,6 @@ int lucas_prime_P1 (uint64_t n, uint64_t Q)
 
 		montgomery_mul_mod(U1, U1, 1ULL, rbit, r_1, n, un_i);
 	} else {
-		// FIXME: 64bit is not working correctly
-		unsigned __int128 tmp128;
 		montgomery_cached(n, &un_i, &rbit);
 
 		U1 = -n;
@@ -257,6 +255,7 @@ int lucas_prime_P1 (uint64_t n, uint64_t Q)
 			const_2 = (unsigned __int128) U1 * 2 - n;
 		} else {
 			const_2 = U1 * 2ULL;
+			if (const_2 > n) const_2 -= n;
 		}
 		fast_mul_mod(Q, Q, U1, n);
 
@@ -266,26 +265,18 @@ int lucas_prime_P1 (uint64_t n, uint64_t Q)
 				montgomery_mul_mod_bit64(Utmp2, U0, Q, n, un_i);
 				montgomery_mul_mod_bit64(U1, const_2, U1, n, un_i);
 				montgomery_mul_mod_bit64(U1, Utmp2, U1, n, un_i);
-				tmp128 = U1 + Utmp1;
-				if (tmp128 >> 64) U1 = tmp128 - n;
-				else {U1 = tmp128; if (U1 > n) U1 -= n;}
+				add_mod(U1, U1, Utmp1, n);
 				montgomery_mul_mod_bit64(U0, Utmp2, U0, n, un_i);
-				tmp128 = U0 + Utmp1;
-				if (tmp128 >> 64) U0 = tmp128 - n;
-				else {U0 = tmp128; if (U0 > n) U0 -= n;}
+				add_mod(U0, U0, Utmp1, n);
 			} else {
 				montgomery_mul_mod_bit64(Utmp1, U0, U0, n, un_i);
 				montgomery_mul_mod_bit64(Utmp2, U1, U0, n, un_i);
 				montgomery_mul_mod_bit64(U0, Utmp2, const_2, n, un_i);
-				tmp128 = U0 + (n - Utmp1);
-				if (tmp128 >> 64) U0 = tmp128 - n;
-				else {U0 = tmp128; if (U0 > n) U0 -= n;}
+				add_mod(U0, U0, n - Utmp1, n);
 				montgomery_mul_mod_bit64(U1, U1, U1, n, un_i);
 				Utmp2 = U1;
 				montgomery_mul_mod_bit64(U1, Utmp1, Q, n, un_i);
-				tmp128 = U1 + Utmp2;
-				if (tmp128 >> 64) U1 = tmp128 - n;
-				else {U1 = tmp128; if (U1 > n) U1 -= n;}
+				add_mod(U1, U1, Utmp2, n);
 			}
 		}
 

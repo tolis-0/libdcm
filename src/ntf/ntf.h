@@ -32,6 +32,18 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n);
 #define mul_modadd(a, b, c, m) \
 	(((unsigned __int128) (a) * (b) + (c)) % (uint64_t) (m))
 
+#define add_mod(rem, a, b, m) \
+	do { \
+		unsigned __int128 tmp128; \
+		tmp128 = (unsigned __int128) (a) + (b); \
+		if (tmp128 >> 64) { \
+			rem = tmp128 - m; \
+		} else { \
+			rem = tmp128; \
+			if (rem > m) rem -= m; \
+		} \
+	} while (0)
+
 #ifdef __x86_64__
 /* rem = (a * b + d) % m */
 #define fast_mul_mod(rem, a, b, m) fast_muladd_mod(rem, a, b, 0, m)
