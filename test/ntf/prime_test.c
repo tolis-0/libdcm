@@ -53,15 +53,16 @@ skip_lucas_##test_name: \
 }
 
 LUCAS_TEST(pseudoprime, b217120, 1);
+LUCAS_TEST(strpseudo, b217255, 1);
 LUCAS_TEST(pseudob2345, a074773, 0);
 LUCAS_TEST(pseudob2, b001262, 0);
 LUCAS_TEST(primes, primes, 1);
 
 int main () 
 {
-	int8_t *isprime_array;
+/*	int8_t *isprime_array;
 
-/*	mr_prime_sequence_test();
+	mr_prime_sequence_test();
 	s3_prime_sequence_test();
 	ef_prime_sequence_test();
 	bpsw_prime_sequence_test();
@@ -75,17 +76,18 @@ int main ()
 	ef_prime_set_test();
 	bpsw_prime_set_test();
 
-	ef_prime_set26_test(); 	// The Twenty-sixth 1,000,000 Primes (from primes.utm.edu)
+	ef_prime_set26_test(); 	// The Twenty-sixth 1,000,000 Primes (primes.utm.edu)
 	bpsw_prime_set26_test();
-	mr_prime_strps_test(); 	// Strong pseudoprimes to bases 2, 3, 5 and 7.
+	mr_prime_strps_test(); 	// Strong pseudoprimes to bases 2, 3, 5 and 7. (oeis.org)
 	mr_prime_prim_test();   // A test for some specific primes
 	mr_prime_comp_test();   // A test for some specific composites
-	mr_prime_p2_2_test(); 	// Primes of form p^2-2, where p is prime.
-	mr_prime_palb24_test(); // Palindromic primes in bases 2 and 4.
-	mr_prime_sigtp_test(); 	// 64bit of A272061 in oeis (Fails above 63bit)
+	mr_prime_p2_2_test(); 	// Primes of form p^2-2, where p is prime. (oeis.org)
+	mr_prime_palb24_test(); // Palindromic primes in bases 2 and 4. (oeis.org)
+	mr_prime_sigtp_test(); 	// 64bit of A272061 (oeis.org)
 	bpsw_prime_sigtp_test();*/
 
 	lucas_P1_pseudoprime_test();
+	lucas_P1_strpseudo_test();
 	lucas_P1_pseudob2345_test();
 	lucas_P1_pseudob2_test();
 	lucas_P1_primes_test();

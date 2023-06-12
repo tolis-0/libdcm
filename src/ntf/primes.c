@@ -193,13 +193,14 @@ int32_t find_D_jacobi (uint64_t n)
 /* test for P = 1 */
 int lucas_prime_P1 (uint64_t n, uint64_t Q)
 {
-	uint64_t bit, U0, U1, Utmp1, Utmp2, const_2, un_i, rbit;
+	uint64_t bit, U0, U1, Utmp1, Utmp2, const_2, un_i, rbit, r_1;
 
 	bit = 0x8000000000000000;
 	while ((n & bit) == 0) bit >>= 1;
 
-	U0 = 0, U1 = 1;
-	if (n < 4294967295) {
+	U0 = 0;
+	if (n < 0x100000000) {
+		U1 = 1;
 		for (; bit; bit >>= 1) {
 			if (n & bit) {
 				Utmp1 = (U1 * U1) % n;
@@ -214,25 +215,84 @@ int lucas_prime_P1 (uint64_t n, uint64_t Q)
 				U0 = Utmp2 % n;
 			}
 		}
-	} else {
+	} else if (n < 0x8000000000000000) {
+		montgomery_cached(n, &un_i, &rbit);
+
+		r_1 = 1ULL << rbit;
+		U1 = r_1 - n;
+		const_2 = 2ULL * U1;
+		if (const_2 > n) const_2 -= n;
+		fast_mul_mod(Q, Q, r_1, n);
+		r_1--;
+
 		for (; bit; bit >>= 1) {
 			if (n & bit) {
-				fast_mul_mod(Utmp1, U1, U1, n);
-				fast_mul_mod(Utmp2, U0, Q, n);
-				fast_mul_mod(U1, 2ULL, U1, n);
-				fast_muladd_mod(U1, Utmp2, U1, Utmp1, n);
-				fast_muladd_mod(U0, Utmp2, U0, Utmp1, n);
+				montgomery_mul_mod(Utmp1, U1, U1, rbit, r_1, n, un_i);
+				montgomery_mul_mod(Utmp2, U0, Q, rbit, r_1, n, un_i);
+				montgomery_mul_mod(U1, const_2, U1, rbit, r_1, n, un_i);
+				montgomery_mul_mod(U1, Utmp2, U1, rbit, r_1, n, un_i);
+				U1 += Utmp1; if (U1 > n) U1 -= n;
+				montgomery_mul_mod(U0, Utmp2, U0, rbit, r_1, n, un_i);
+				U0 += Utmp1; if (U0 > n) U0 -= n;
 			} else {
-				fast_mul_mod(Utmp1, U0, U0, n);
-				fast_mul_mod(Utmp2, U1, U0, n);
-				fast_muladd_mod(U0, Utmp2, 2ULL, n - Utmp1, n);
-				fast_mul_mod(U1, U1, U1, n);
-				fast_muladd_mod(U1, Utmp1, Q, U1, n);
+				montgomery_mul_mod(Utmp1, U0, U0, rbit, r_1, n, un_i);
+				montgomery_mul_mod(Utmp2, U1, U0, rbit, r_1, n, un_i);
+				montgomery_mul_mod(U0, Utmp2, const_2, rbit, r_1, n, un_i);
+				U0 += n - Utmp1; if (U0 > n) U0 -= n;
+				montgomery_mul_mod(U1, U1, U1, rbit, r_1, n, un_i);
+				Utmp2 = U1;
+				montgomery_mul_mod(U1, Utmp1, Q, rbit, r_1, n, un_i);
+				U1 += Utmp2; if (U1 > n) U1 -= n;
 			}
 		}
+
+		montgomery_mul_mod(U1, U1, 1ULL, rbit, r_1, n, un_i);
+	} else {
+		// FIXME: 64bit is not working correctly
+		unsigned __int128 tmp128;
+		montgomery_cached(n, &un_i, &rbit);
+
+		U1 = -n;
+		if (U1 & 0x8000000000000000) {
+			const_2 = (unsigned __int128) U1 * 2 - n;
+		} else {
+			const_2 = U1 * 2ULL;
+		}
+		fast_mul_mod(Q, Q, U1, n);
+
+		for (; bit; bit >>= 1) {
+			if (n & bit) {
+				montgomery_mul_mod_bit64(Utmp1, U1, U1, n, un_i);
+				montgomery_mul_mod_bit64(Utmp2, U0, Q, n, un_i);
+				montgomery_mul_mod_bit64(U1, const_2, U1, n, un_i);
+				montgomery_mul_mod_bit64(U1, Utmp2, U1, n, un_i);
+				tmp128 = U1 + Utmp1;
+				if (tmp128 >> 64) U1 = tmp128 - n;
+				else {U1 = tmp128; if (U1 > n) U1 -= n;}
+				montgomery_mul_mod_bit64(U0, Utmp2, U0, n, un_i);
+				tmp128 = U0 + Utmp1;
+				if (tmp128 >> 64) U0 = tmp128 - n;
+				else {U0 = tmp128; if (U0 > n) U0 -= n;}
+			} else {
+				montgomery_mul_mod_bit64(Utmp1, U0, U0, n, un_i);
+				montgomery_mul_mod_bit64(Utmp2, U1, U0, n, un_i);
+				montgomery_mul_mod_bit64(U0, Utmp2, const_2, n, un_i);
+				tmp128 = U0 + (n - Utmp1);
+				if (tmp128 >> 64) U0 = tmp128 - n;
+				else {U0 = tmp128; if (U0 > n) U0 -= n;}
+				montgomery_mul_mod_bit64(U1, U1, U1, n, un_i);
+				Utmp2 = U1;
+				montgomery_mul_mod_bit64(U1, Utmp1, Q, n, un_i);
+				tmp128 = U1 + Utmp2;
+				if (tmp128 >> 64) U1 = tmp128 - n;
+				else {U1 = tmp128; if (U1 > n) U1 -= n;}
+			}
+		}
+
+		montgomery_mul_mod_bit64(U1, U1, 1ULL, n, un_i);
 	}
 
-	return U1 == 0;
+	return (U1 == 0);
 }
 
 

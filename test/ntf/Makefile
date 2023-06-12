@@ -15,6 +15,7 @@ $(EXEF): %: %.c
 
 clean:
 	find . -type f -executable -delete
+	rm perf.data perf.data.old
 
 test:
 	find . -type f -executable -name '*test*' -exec {} \;
