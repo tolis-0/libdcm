@@ -26,7 +26,7 @@ int s3_prime (uint64_t n)
 
 
 /* Skips multiples of 2, 3 and 5 but starts with 211 for ef_prime */
-int s5_prime_st97 (uint64_t n)
+int s5_prime_ef (uint64_t n)
 {
 	uint64_t root, p;
 
@@ -399,7 +399,7 @@ int ef_prime (uint64_t n)
 	if (n % 127 == 0) return 0;
 	if (n % 131 == 0) return 0;
 
-	if (n < 130000) return s5_prime_st97(n);
+	if (n < 130000) return s5_prime_ef(n);
 	if (n < 4000000000) return mr_prime(n);
 	return bpsw_prime(n);
 }
