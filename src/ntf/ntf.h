@@ -10,7 +10,7 @@ int s3_prime (uint64_t n);
 int mr_prime (uint64_t n);
 int ef_prime (uint64_t n);
 int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
-int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
+int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint64_t a);
 int32_t find_D_jacobi (uint64_t n);
 int lucas_prime_P1 (uint64_t n, uint64_t Q);
 int bpsw_prime (uint64_t n);
@@ -114,6 +114,9 @@ uint64_t fib_mod (uint64_t n, uint64_t modulo);
 
 
 /* ntf/divisibility.c */
+#define is_odd(x) (x & 1)
+#define is_even(x) (is_odd(x) == 0)
+
 #define max_factors_i 9
 typedef struct {
 	uint32_t prime;
@@ -156,7 +159,7 @@ uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
 	do { \
 		table = (uint32_t *) malloc((limit)*sizeof(uint32_t)); \
 		factor_table(is_prime, limit, primes, N, table); \
-	} while (0);
+	} while (0)
 
 
 

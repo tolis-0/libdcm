@@ -14,7 +14,7 @@
 #endif
 
 
-#define _to_string(s...) #s
+#define _to_string(x...) #x
 
 
 #endif // _DCMATH_H

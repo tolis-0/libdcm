@@ -16,36 +16,44 @@ int s3_prime (uint64_t n)
 	root = (uint64_t) floorl(sqrtl(n));
 
 	for (p = 5; p <= root; p += 4) {
-		if (n % p == 0) return 0; // checks for 5+6n
+		if (n % p == 0) return 0; // checks for 6n+5
 		p += 2;
-		if (n % p == 0) return 0; // checks for 7+6n
+		if (n % p == 0) return 0; // checks for 6n+1
 	}
 
 	return 1;
 }
 
 
-/* Skips multiples of 2, 3 and 5 but starts with 97 for ef_prime */
+/* Skips multiples of 2, 3 and 5 but starts with 211 for ef_prime */
 int s5_prime_st97 (uint64_t n)
 {
 	uint64_t root, p;
 
-	if (n < 2) return 0;
-	if (n < 9409) return 1;
-	if (n % 97 == 0) return 0;
+	if (n < 44521) return 1;
+	if (n % 211 == 0) return 0;
 
 	root = (uint64_t) floorl(sqrtl(n));
+	p = 211;
+	if (p > root) return 1;
+	goto s5p_first_check;
 
-	for (p = 101; p <= root; p += 4) {
-		if (n % p == 0) return 0; 
-		p += 2; if (n % p == 0) return 0; 
-		p += 4; if (n % p == 0) return 0; 
-		p += 2; if (n % p == 0) return 0; 
-		p += 4; if (n % p == 0) return 0; 
-		p += 6; if (n % p == 0) return 0; 
-		p += 2; if (n % p == 0) return 0; 
-		p += 6; if (n % p == 0) return 0; 
+#define check_divisibility_next(x) \
+	p += (x); if (n % p == 0) return 0; if (p > root) return 1;
+
+	for (;;) {
+		check_divisibility_next(2); // checks for 30n+1
+s5p_first_check:
+		check_divisibility_next(6); // checks for 30n+7
+		check_divisibility_next(4); // checks for 30n+11
+		check_divisibility_next(2); // checks for 30n+13
+		check_divisibility_next(4); // checks for 30n+17
+		check_divisibility_next(2); // checks for 30n+19
+		check_divisibility_next(4); // checks for 30n+23
+		check_divisibility_next(6); // checks for 30n+29
 	}
+
+#undef check_divisibility_next
 
 	return 1;
 }
@@ -132,7 +140,7 @@ int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
 }
 
 
-int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
+int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint64_t a)
 {
 	uint64_t base;
 	uint32_t r;
@@ -337,6 +345,7 @@ int bpsw_prime (uint64_t n)
 
 int ef_prime (uint64_t n)
 {
+	if (n < 2) return 0;
 	if (n % 2 == 0) return n == 2;
 	if (n % 3 == 0) return n == 3;
 	if (n % 5 == 0) return n == 5;
@@ -351,6 +360,7 @@ int ef_prime (uint64_t n)
 	if (n % 37 == 0) return n == 37;
 	if (n % 41 == 0) return n == 41;
 	if (n % 43 == 0) return n == 43;
+	if (n < 1849) return 1;
 	if (n % 47 == 0) return n == 47;
 	if (n % 53 == 0) return n == 53;
 	if (n % 59 == 0) return n == 59;
@@ -361,6 +371,30 @@ int ef_prime (uint64_t n)
 	if (n % 79 == 0) return n == 79;
 	if (n % 83 == 0) return n == 83;
 	if (n % 89 == 0) return n == 89;
+	if (n % 97 == 0) return n == 97;
+	if (n < 9409) return 1;
+	if (n % 101 == 0) return n == 101;
+	if (n % 103 == 0) return n == 103;
+	if (n % 107 == 0) return n == 107;
+	if (n % 109 == 0) return n == 109;
+	if (n % 113 == 0) return n == 113;
+	if (n % 127 == 0) return n == 127;
+	if (n % 131 == 0) return n == 131;
+	if (n % 137 == 0) return n == 137;
+	if (n % 139 == 0) return n == 139;
+	if (n % 149 == 0) return n == 149;
+	if (n % 151 == 0) return n == 151;
+	if (n % 157 == 0) return n == 157;
+	if (n % 163 == 0) return n == 163;
+	if (n < 26569) return 1;
+	if (n % 167 == 0) return n == 167;
+	if (n % 173 == 0) return n == 173;
+	if (n % 179 == 0) return n == 179;
+	if (n % 181 == 0) return n == 181;
+	if (n % 191 == 0) return n == 191;
+	if (n % 193 == 0) return n == 193;
+	if (n % 197 == 0) return n == 197;
+	if (n % 199 == 0) return n == 199;
 
 	if (n < 130000) return s5_prime_st97(n);
 	if (n < 4000000000) return mr_prime(n);

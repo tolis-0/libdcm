@@ -8,7 +8,7 @@
 #define PRIME_FUNC_PERFORMANCE(func) \
 	void func##_performance (uint64_t total, uint32_t bits) { \
 		uint64_t i, *input, a; \
-		clock_t start, end = 0; \
+		clock_t start, end; \
 		\
 		set_rand(); \
 		input = (uint64_t *) malloc(total * sizeof(uint64_t)); \

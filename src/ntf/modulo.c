@@ -64,7 +64,8 @@ uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n)
 
 void montgomery_cached (uint64_t n, uint64_t *un_i, uint64_t *rbit)
 {
-	static uint64_t cached_n = 0, _un_i, _rbit, _r_1;
+	static uint64_t cached_n = 0, _un_i, _rbit;
+	uint64_t _r_1;
 	int64_t tmp, n_i;
 
 	if (n == cached_n) goto mont_cached_return;
