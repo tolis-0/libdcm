@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g -Wall -Wextra
+CFLAGS = -g -O2 -Wall -Wextra
 
 SOURCEF = $(wildcard *.c)
 HEADERF = $(wildcard *.h)

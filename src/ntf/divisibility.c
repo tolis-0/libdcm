@@ -71,37 +71,48 @@ uint64_t gcd (uint64_t a, uint64_t b)
 	return a;
 }
 
+
+uint64_t fast_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t) {
+	uint64_t a2, a3, c0, c1, g;
+
+	a2 = a % b, c0 = a / b;
+
+	if (a2 < 1) {
+		s[0] = 1;
+		t[0] = 0;
+		return b;
+	}
+
+	a3 = b % a2, c1 = b / a2;
+
+	if (a3 < 1) {
+		s[0] = -c0;
+		t[0] = 1;
+		return a2;
+	}
+
+	g = fast_ext_gcd (a2, a3, s, t);
+	t[0] -= c1 * s[0];
+	s[0] -= c0 * t[0];
+
+	return g;
+}
+
+
 uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
 {
-	uint64_t q, old_r, new_r;
-	int64_t old_s, new_s, tmp;
-
-	new_s = 0, old_s = 1, new_r = b, old_r = a;
-
-	while (new_r) {
-		q = old_r / new_r;
-		tmp = new_r;
-		new_r = old_r - q * new_r;
-		old_r = tmp;
-
-		tmp = new_s;
-		new_s = old_s - q * new_s;
-		old_s = tmp;
+	if (a == 0) {
+		s[0] = 0;
+		if (b == 0) t[0] = 0;
+		else t[0] = 1;
+		return b;
 	}
 
-	if (b) {
-		if (a > 4294967294 || b > 4294967294) {
-			__int128 tmp = (__int128) old_r - old_s * (__int128) a;
-			t[0] = tmp / b;
-		} else {
-			tmp = (int64_t) old_r - old_s * (int64_t) a;
-			t[0] = tmp / (int64_t) b;
-		}
-	} else {
-		t[0] = 0;
+	if (b == 0) {
+		s[0] = 1, t[0] = 0;
+		return a;
 	}
 
-	s[0] = old_s;
-
-	return old_r;
+	if (a > b) return fast_ext_gcd(a, b, t, s);
+	else return fast_ext_gcd(b, a, s, t);
 }
