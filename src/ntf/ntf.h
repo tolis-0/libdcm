@@ -132,6 +132,15 @@ typedef struct {
 uint16_t factoring_ft (uint32_t n, factor_i *factors, uint32_t *table);
 int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, uint32_t *table);
 
+#define quick_mul_div(m, d, a, b) \
+	do { \
+		if (a < 2 * b) { \
+			m = a - b, d = 1; \
+		} else { \
+			m = a % b, d = a / b; \
+		} \
+	} while (0)
+
 uint64_t gcd (uint64_t m, uint64_t n);
 uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
 
