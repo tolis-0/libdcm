@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -g3 -ggdb -Wall -Wextra
-LIBFLAGS = -lm -ldcm -lgmp
+LIBFLAGS = -ldcm -lgmp -lm
 
 SOURCEF = $(wildcard *.c)
 EXEF = $(patsubst %.c,%,$(SOURCEF))
