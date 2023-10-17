@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <math.h>
-#include "ntf.h"
+#include "dc_arithmetic.h"
 
 uint64_t digits_fib (uint64_t n) {
 	long double log10_fib;

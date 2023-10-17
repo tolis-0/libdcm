@@ -1,7 +1,7 @@
 CC = gcc
 LFLAGS = -g -fPIC -shared
 
-SOURCEDIR = src src/nstrings src/ntf src/dcalgs
+SOURCEDIR = src src/strings src/arithmetic src/algorithms
 LIBDIR = /usr/local/lib/libdcm/
 INCLUDEDIR = /usr/local/include/
 
@@ -15,8 +15,8 @@ LIBF = /usr/local/lib/libdcm.so
 all: compile link include
 
 compile:
-	cd src/nstrings && make
-	cd src/ntf && make
+	cd src/strings && make
+	cd src/arithmetic && make
 
 link:
 	$(CC) $(LFLAGS) -o libdcm.so $(OBJECTF) && \
@@ -26,8 +26,8 @@ include:
 	cp $(HEADERF) $(INCLUDEDIR)
 
 clean:
-	cd src/nstrings && make clean
-	cd src/ntf && make clean
+	cd src/strings && make clean
+	cd src/arithmetic && make clean
 	rm -f libdcm.so
 
 delete:

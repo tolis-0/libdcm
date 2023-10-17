@@ -24,7 +24,7 @@
 		|| ((var == var##_r) ? 0 : (var = var##_r, 1)); \
 		(condition) ? (var##_l = var - is_lt) : (var##_r = var + is_ft))
 
-/*	
+/*
  *	Example Usage:
  *
  *	dc_fbs (j, 1, LIMIT, roots >= CONSTANT) {

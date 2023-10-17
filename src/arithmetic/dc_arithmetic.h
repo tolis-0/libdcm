@@ -1,5 +1,5 @@
-#ifndef _NTF_H
-#define _NTF_H
+#ifndef _DC_ARITHMETIC_H
+#define _DC_ARITHMETIC_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -172,4 +172,4 @@ uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
 
 
 
-#endif // _NTF_H
+#endif // _DC_ARITHMETIC_H

@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "ntf.h"
+#include "dc_arithmetic.h"
 
 
 uint16_t factoring_ft (uint32_t n, factor_i *factors, uint32_t *table) 

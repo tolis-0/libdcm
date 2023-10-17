@@ -2,19 +2,16 @@
 #define _DCMATH_H
 
 #ifndef _NTF_H
-#include "ntf.h"
+#include "dc_arithmetic.h"
 #endif
 
 #ifndef _NSTRINGS_H
-#include "nstrings.h"
+#include "dc_strings.h"
 #endif
 
 #ifndef _DCALGS_H
-#include "dcalgs.h"
+#include "dc_algorithms.h"
 #endif
-
-
-#define _to_string(x...) #x
 
 
 #endif // _DCMATH_H

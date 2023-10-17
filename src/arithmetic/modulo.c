@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "ntf.h"
+#include "dc_arithmetic.h"
 
 uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t n) 
 {

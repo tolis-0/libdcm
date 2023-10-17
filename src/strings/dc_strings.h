@@ -1,5 +1,5 @@
-#ifndef _NSTRINGS_H
-#define _NSTRINGS_H
+#ifndef _DC_STRINGS_H
+#define _DC_STRINGS_H
 
 #ifndef _STDINT_H
 #include "stdint.h"
@@ -15,4 +15,4 @@ uint64_t digit_id (uint64_t n);
 uint64_t reverse (uint64_t n);
 
 
-#endif // _NSTRINGS_H
+#endif // _DC_STRINGS_H

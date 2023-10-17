@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
-#include "ntf.h"
+#include "dc_arithmetic.h"
 
 
 /* Skips multiples of 2 and 3 */
