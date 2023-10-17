@@ -11,7 +11,3 @@
 *.a
 *.la
 
-# Ignore perf output files
-**/perf.data
-**/perf.data.old
-
