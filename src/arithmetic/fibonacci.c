@@ -2,7 +2,9 @@
 #include <math.h>
 #include "dc_arithmetic.h"
 
-uint64_t digits_fib (uint64_t n) {
+
+/* Number of digits of nth Fibonacci number */
+uint64_t dc_fib_digits (uint64_t n) {
 	long double log10_fib;
 
 	if (n < 7) return 1L;
@@ -11,9 +13,9 @@ uint64_t digits_fib (uint64_t n) {
 	return (uint64_t) ceill(log10_fib);
 }
 
-uint32_t pisano (uint64_t n) {
-	uint64_t fib1, fib2, fib3;
-	uint32_t i;
+/* Pisano period of nth Fibonacci number */
+uint64_t dc_pisano (uint64_t n) {
+	uint64_t i, fib1, fib2, fib3;
 
 	if (n == 1) return 1;
 	fib1 = 0, fib2 = 1;
@@ -28,7 +30,8 @@ uint32_t pisano (uint64_t n) {
 	return i;
 }
 
-uint64_t fib_mod (uint64_t n, uint64_t modulo) {
+/* nth Fibonacci number mod m*/
+uint64_t dc_fib_mod (uint64_t n, uint64_t m) {
 	
 	// TODO
 	

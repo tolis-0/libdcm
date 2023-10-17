@@ -6,18 +6,16 @@
 
 
 /* ntf/primes.c */
-int s3_prime (uint64_t n);
-int mr_prime (uint64_t n);
-int ef_prime (uint64_t n);
-int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
-int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint64_t a);
-int32_t find_D_jacobi (uint64_t n);
-int lucas_prime_P1 (uint64_t n, uint64_t Q);
-int bpsw_prime (uint64_t n);
+int dc_prime (uint64_t n);
+int dc_miller (uint64_t n);
+int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
+int32_t dc_find_jacobi (uint64_t n);
+int dc_lucas_p1 (uint64_t n, uint64_t Q);
+int dc_bpsw (uint64_t n);
 
 void er_sieve (int8_t *isprime, size_t limit);
 
-uint64_t pcf_approx (uint64_t x);
+uint64_t dc_pcf_approx (uint64_t x);
 int mobius_f (int N, int* isprime);
 void mobius_setup (int *mobius, int limit, int *primes, int primes_size);
 void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int primes_size);
@@ -25,8 +23,7 @@ void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int prim
 
 
 /* ntf/modulo.c */
-uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t n);
-uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n);
+uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t n);
 
 #define mul_mod(a, b, m) mul_modadd(a, b, 0, m)
 #define mul_modadd(a, b, c, m) \
@@ -107,14 +104,14 @@ void montgomery_cached (uint64_t n, uint64_t *un_i, uint64_t *rbit);
 #define log10_sqrt5 	0.349485002168009402393130552637753487L
 #define log10_phi   	0.208987640249978733769272089237555417L
 
-uint64_t digits_fib (uint64_t n);
-uint32_t pisano (uint64_t n);
-uint64_t fib_mod (uint64_t n, uint64_t modulo);
+uint64_t dc_fib_digits (uint64_t n);
+uint64_t dc_pisano (uint64_t n);
+uint64_t dc_fib_mod (uint64_t n, uint64_t m);
 
 
 
 /* ntf/divisibility.c */
-#define is_odd(x) (x & 1)
+#define is_odd(x) ((x) & 1)
 #define is_even(x) (is_odd(x) == 0)
 
 #define max_factors_i 9
@@ -157,7 +154,7 @@ uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
 #define malloc_primes(is_prime, primes, N, limit) \
 	do { \
 		malloc_sieve(is_prime, limit); \
-		primes = (typeof(primes)) malloc(pcf_approx(limit) * sizeof(*primes)); \
+		primes = (typeof(primes)) malloc(dc_pcf_approx(limit) * sizeof(*primes)); \
 		N = 0; \
 		for (typeof(*primes) i = 2; i < (limit); i++) \
 			if (is_prime[i]) primes[N++] = i; \

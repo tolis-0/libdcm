@@ -1,27 +1,22 @@
 #include <stdint.h>
 #include "dc_arithmetic.h"
 
-uint64_t exp_mod (uint64_t base, uint64_t exp, uint64_t n) 
-{
-	uint64_t x = 1;
 
-	for (base %= n; exp != 0; exp >>= 1){
-		if (exp & 1) x = ( x * base) % n;
-		base = (base * base) % n;
-	}
-
-	return x;
-}
-
-
-uint64_t ext_mod (uint64_t base, uint64_t exp, uint64_t n) 
+uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t n) 
 {
 	uint64_t x, rbit, r_1, un_i;
 	
-	if ((n & 1) == 0) {
-		x = 1;
+	if (n <= 0x100000000) {
+		for (x = 1, base %= n; exp != 0; exp >>= 1){
+			if (exp & 1) x = (x * base) % n;
+			base = (base * base) % n;
+		}
 
-		for (base %= n; exp; exp >>= 1){
+		return x;
+	}
+
+	if ((n & 1) == 0) {
+		for (x = 1, base %= n; exp; exp >>= 1){
 			if (exp & 1) fast_mul_mod(x, x, base, n);
 			fast_mul_mod(base, base, base, n);
 		}

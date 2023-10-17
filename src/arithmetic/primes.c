@@ -4,29 +4,8 @@
 #include "dc_arithmetic.h"
 
 
-/* Skips multiples of 2 and 3 */
-int s3_prime (uint64_t n)
-{
-	uint64_t root, p;
-
-	if (n < 2) return 0;
-	if (n == 2 || n == 3) return 1;
-	else if (n % 2 == 0 || n % 3 == 0) return 0;
-
-	root = (uint64_t) floorl(sqrtl(n));
-
-	for (p = 5; p <= root; p += 4) {
-		if (n % p == 0) return 0; // checks for 6n+5
-		p += 2;
-		if (n % p == 0) return 0; // checks for 6n+1
-	}
-
-	return 1;
-}
-
-
 /* Skips multiples of 2, 3 and 5 but starts with 211 for ef_prime */
-int s5_prime_ef (uint64_t n)
+int dc_s5_prime_ef (uint64_t n)
 {
 	uint64_t root, p;
 
@@ -78,7 +57,7 @@ s5p_first_check:
 
 
 /* Miller–Rabin primality test */
-int mr_prime (uint64_t n)
+int dc_miller (uint64_t n)
 {
 	uint64_t d;
 	uint32_t s;
@@ -92,92 +71,77 @@ int mr_prime (uint64_t n)
 
 	if (n < 9080191) {
 		if (n == 31 || n == 73) return 1;
-		if (mr_prime_test(n, d, s, 31)) return 0;
-		if (mr_prime_test(n, d, s, 73)) return 0;
+		if (dc_mr_test(n, d, s, 31)) return 0;
+		if (dc_mr_test(n, d, s, 73)) return 0;
 		return 1;
 	}
 
 	if (n < 4759123141) {
-		if (n < 4294967295) {
-			if (mr_prime_test(n, d, s, 7)) return 0;
-			if (mr_prime_test(n, d, s, 2)) return 0;
-			if (mr_prime_test(n, d, s, 61)) return 0;
-			return 1;
-		}
-		if (ext_mr_prime_test(n, d, s, 7)) return 0;
-		if (ext_mr_prime_test(n, d, s, 2)) return 0;
-		if (ext_mr_prime_test(n, d, s, 61)) return 0;
+		if (dc_mr_test(n, d, s, 7)) return 0;
+		if (dc_mr_test(n, d, s, 2)) return 0;
+		if (dc_mr_test(n, d, s, 61)) return 0;
 		return 1;
 	}
 
 	if (n < 1122004669633) {
-		if (ext_mr_prime_test(n, d, s, 13)) return 0;
-		if (ext_mr_prime_test(n, d, s, 2)) return 0;
-		if (ext_mr_prime_test(n, d, s, 23)) return 0;
-		if (ext_mr_prime_test(n, d, s, 1662803)) return 0;
+		if (dc_mr_test(n, d, s, 13)) return 0;
+		if (dc_mr_test(n, d, s, 2)) return 0;
+		if (dc_mr_test(n, d, s, 23)) return 0;
+		if (dc_mr_test(n, d, s, 1662803)) return 0;
 		return 1;
 	}
 
-	if (ext_mr_prime_test(n, d, s, 11)) return 0;
-	if (ext_mr_prime_test(n, d, s, 7)) return 0;
-	if (ext_mr_prime_test(n, d, s, 5)) return 0;
-	if (ext_mr_prime_test(n, d, s, 3)) return 0;
-	if (ext_mr_prime_test(n, d, s, 2)) return 0;
+	if (dc_mr_test(n, d, s, 11)) return 0;
+	if (dc_mr_test(n, d, s, 7)) return 0;
+	if (dc_mr_test(n, d, s, 5)) return 0;
+	if (dc_mr_test(n, d, s, 3)) return 0;
+	if (dc_mr_test(n, d, s, 2)) return 0;
 	if (n < 2152302898747) return 1;
-	if (ext_mr_prime_test(n, d, s, 13)) return 0;
+	if (dc_mr_test(n, d, s, 13)) return 0;
 	if (n < 3474749660383) return 1;
-	if (ext_mr_prime_test(n, d, s, 17)) return 0;
+	if (dc_mr_test(n, d, s, 17)) return 0;
 	if (n < 341550071728321) return 1;
-	if (ext_mr_prime_test(n, d, s, 19)) return 0;
-	if (ext_mr_prime_test(n, d, s, 23)) return 0;
+	if (dc_mr_test(n, d, s, 19)) return 0;
+	if (dc_mr_test(n, d, s, 23)) return 0;
 	if (n < 3825123056546413051) return 1;
-	if (ext_mr_prime_test(n, d, s, 29)) return 0;
-	if (ext_mr_prime_test(n, d, s, 31)) return 0;
-	if (ext_mr_prime_test(n, d, s, 37)) return 0;
+	if (dc_mr_test(n, d, s, 29)) return 0;
+	if (dc_mr_test(n, d, s, 31)) return 0;
+	if (dc_mr_test(n, d, s, 37)) return 0;
 	return 1;
 }
 
 
 /* Returns 1 if n is definitely composite */
-int mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
+int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
 {
 	uint64_t base;
 	uint32_t r;
 
-	base = exp_mod(a, d, n);
+	base = dc_exp_mod(a, d, n);
 
-	if (base == 1 || base == n-1) return 0;
+	if (base == 1 || base == n - 1) return 0;
 
-	for (r = 1; r < s; r++) {
-		base = (base * base) % n;
-		if (base == 1) return 1;
-		if (base == n-1) return 0;
+	if (n <= 0x100000000) {
+		for (r = 1; r < s; r++) {
+			base = (base * base) % n;
+			if (base == 1) return 1;
+			if (base == n-1) return 0;
+		}
+	} else {
+		for (r = 1; r < s; r++) {
+			fast_mul_mod(base, base, base, n);
+			if (base == 1) return 1;
+			if (base == n-1) return 0;
+		}
 	}
 
 	return 1;
 }
 
 
-int ext_mr_prime_test (uint64_t n, uint64_t d, uint32_t s, uint64_t a)
-{
-	uint64_t base;
-	uint32_t r;
-
-	base = ext_mod(a, d, n);
-
-	if (base == 1 || base == n-1) return 0;
-
-	for (r = 1; r < s; r++) {
-		fast_mul_mod(base, base, base, n);
-		if (base == 1) return 1;
-		if (base == n-1) return 0;
-	}
-
-	return 1;
-}
 
 // bpsw has to check 5 and 11 because it returns 0
-int32_t find_D_jacobi (uint64_t n)
+int32_t dc_find_jacobi (uint64_t n)
 {
 	uint64_t root, p, a, rem;
 	uint32_t D;
@@ -217,7 +181,7 @@ int32_t find_D_jacobi (uint64_t n)
 
 
 /* test for P = 1 */
-int lucas_prime_P1 (uint64_t n, uint64_t Q)
+int dc_lucas_p1 (uint64_t n, uint64_t Q)
 {
 	uint64_t bit, U0, U1, Utmp1, Utmp2, const_2, un_i, rbit, r_1;
 
@@ -313,7 +277,7 @@ int lucas_prime_P1 (uint64_t n, uint64_t Q)
 }
 
 
-int bpsw_prime (uint64_t n)
+int dc_bpsw (uint64_t n)
 {
 	uint64_t d, s, negQ;
 	int64_t tmp;
@@ -327,26 +291,18 @@ int bpsw_prime (uint64_t n)
 
 	if (d < (1UL << s)) {
 		if (n == 5) return 1;
-		D = find_D_jacobi(n);
+		D = dc_find_jacobi(n);
 		if (D == 0) return 0;
 		if (D < 0) D += n;
-		if (n < 4294967295){
-			if (exp_mod(D, (n-1)/2, n) == n - 1) return 1;
-		} else {
-			if (ext_mod(D, (n-1)/2, n) == n - 1) return 1;
-		}
+		if (dc_exp_mod(D, (n-1)/2, n) == n - 1) return 1;
 		return 0;
 	}
 
 	/* Miller–Rabin test base 2 */
-	if (n < 4294967295) {
-		if (mr_prime_test(n, d, s, 2)) return 0;
-	} else {
-		if (ext_mr_prime_test(n, d, s, 2)) return 0;
-	}
+	if (dc_mr_test(n, d, s, 2)) return 0;
 
 
-	D = find_D_jacobi(n);
+	D = dc_find_jacobi(n);
 	if (D == 0) return 0;
 
 	tmp = (1 - D) / 4;
@@ -357,11 +313,11 @@ int bpsw_prime (uint64_t n)
 		negQ = -tmp;
 	}
 
-	return lucas_prime_P1(n, negQ);
+	return dc_lucas_p1(n, negQ);
 }
 
 
-int ef_prime (uint64_t n)
+int dc_prime (uint64_t n)
 {
 	if (n < 2) return 0;
 	if (n % 2 == 0) return n == 2;
@@ -399,9 +355,9 @@ int ef_prime (uint64_t n)
 	if (n % 127 == 0) return 0;
 	if (n % 131 == 0) return 0;
 
-	if (n < 130000) return s5_prime_ef(n);
-	if (n < 4000000000) return mr_prime(n);
-	return bpsw_prime(n);
+	if (n < 130000) return dc_s5_prime_ef(n);
+	if (n < 0x100000000) return dc_miller(n);
+	return dc_bpsw(n);
 }
 
 
@@ -424,7 +380,7 @@ void er_sieve (int8_t *isprime, size_t limit)
 }
 
 
-uint64_t pcf_approx (uint64_t x)
+uint64_t dc_pcf_approx (uint64_t x)
 {
 	if (x < 2) return 0;
 	return ceill(1.25506L*x/logl(x));
