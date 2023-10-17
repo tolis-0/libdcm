@@ -4,7 +4,7 @@
 #include "dc_arithmetic.h"
 
 
-/* Skips multiples of 2, 3 and 5 but starts with 211 for ef_prime */
+/* Skips multiples of 2, 3 and 5 but starts with 211 for dc_prime */
 int dc_s5_prime_ef (uint64_t n)
 {
 	uint64_t root, p;
@@ -56,7 +56,7 @@ s5p_first_check:
 }
 
 
-/* Miller–Rabin primality test */
+/* Miller–Rabin deterministic test for n < 2^64 */
 int dc_miller (uint64_t n)
 {
 	uint64_t d;
@@ -111,7 +111,8 @@ int dc_miller (uint64_t n)
 }
 
 
-/* Returns 1 if n is definitely composite */
+/* Implements a Miller-Rabin primality test.
+   Returns 1 if n is definitely composite.   */
 int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
 {
 	uint64_t base;
@@ -139,8 +140,9 @@ int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
 }
 
 
-
-// bpsw has to check 5 and 11 because it returns 0
+/* Finds first D in sequence 5, −7, 9, −11, 13, −15...
+   such that jacobi(D,n) = -1 for BPSW. dc_bpsw has to check
+   for values 5 and 11 because it returns 0 */
 int32_t dc_find_jacobi (uint64_t n)
 {
 	uint64_t root, p, a, rem;
@@ -180,7 +182,7 @@ int32_t dc_find_jacobi (uint64_t n)
 }
 
 
-/* test for P = 1 */
+/* Lucas test with P = 1 for BPSW */
 int dc_lucas_p1 (uint64_t n, uint64_t Q)
 {
 	uint64_t bit, U0, U1, Utmp1, Utmp2, const_2, un_i, rbit, r_1;
@@ -277,6 +279,7 @@ int dc_lucas_p1 (uint64_t n, uint64_t Q)
 }
 
 
+/* Baillie-PSW primality test */
 int dc_bpsw (uint64_t n)
 {
 	uint64_t d, s, negQ;
@@ -317,6 +320,7 @@ int dc_bpsw (uint64_t n)
 }
 
 
+/* Main prime function */
 int dc_prime (uint64_t n)
 {
 	if (n < 2) return 0;
