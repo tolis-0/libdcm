@@ -185,7 +185,7 @@ int32_t dc_find_jacobi (uint64_t n)
 /* Lucas test with P = 1 for BPSW */
 int dc_lucas_p1 (uint64_t n, uint64_t Q)
 {
-	uint64_t bit, U0, U1, Utmp1, Utmp2, const_2, un_i, rbit, r_1;
+	uint64_t bit, U0, U1, Utmp1, Utmp2, const_2;
 
 	bit = 0x8000000000000000;
 	while ((n & bit) == 0) bit >>= 1;
@@ -208,49 +208,43 @@ int dc_lucas_p1 (uint64_t n, uint64_t Q)
 			}
 		}
 	} else {
-		dc_montgomery_cached(n, &un_i, &rbit);
+		dc_montgomery_cached(n, &U1);
 
 		if (n < 0x8000000000000000) {
-			r_1 = 1ULL << rbit;
-			U1 = r_1 - n;
 			const_2 = 2ULL * U1;
 			if (const_2 > n) const_2 -= n;
-			Q = dc_mul_mod(Q, U1, n);
-			r_1--;
 		} else {
-			r_1 = 0xFFFFFFFFFFFFFFFF;
-			U1 = -n;
 			if (U1 & 0x8000000000000000) {
 				const_2 = (unsigned __int128) U1 * 2 - n;
 			} else {
 				const_2 = U1 * 2ULL;
 				if (const_2 > n) const_2 -= n;
 			}
-			Q = dc_mul_mod(Q, U1, n);
 		}
+		Q = dc_mul_mod(Q, U1, n);
 
 		for (; bit; bit >>= 1) {
 			if (n & bit) {
-				Utmp1 = dc_montgomery_mul_mod(U1, U1, rbit, r_1, n, un_i);
-				Utmp2 = dc_montgomery_mul_mod(U0, Q, rbit, r_1, n, un_i);
-				U1 = dc_montgomery_mul_mod(const_2, U1, rbit, r_1, n, un_i);
-				U1 = dc_montgomery_mul_mod(Utmp2, U1, rbit, r_1, n, un_i);
+				Utmp1 = dc_montgomery_mul_mod(U1, U1);
+				Utmp2 = dc_montgomery_mul_mod(U0, Q);
+				U1 = dc_montgomery_mul_mod(const_2, U1);
+				U1 = dc_montgomery_mul_mod(Utmp2, U1);
 				U1 = dc_add_mod(U1, Utmp1, n);
-				U0 = dc_montgomery_mul_mod(Utmp2, U0, rbit, r_1, n, un_i);
+				U0 = dc_montgomery_mul_mod(Utmp2, U0);
 				U0 = dc_add_mod(U0, Utmp1, n);
 			} else {
-				Utmp1 = dc_montgomery_mul_mod(U0, U0, rbit, r_1, n, un_i);
-				Utmp2 = dc_montgomery_mul_mod(U1, U0, rbit, r_1, n, un_i);
-				U0 = dc_montgomery_mul_mod(Utmp2, const_2, rbit, r_1, n, un_i);
+				Utmp1 = dc_montgomery_mul_mod(U0, U0);
+				Utmp2 = dc_montgomery_mul_mod(U1, U0);
+				U0 = dc_montgomery_mul_mod(Utmp2, const_2);
 				U0 = dc_add_mod(U0, n - Utmp1, n);
-				U1 = dc_montgomery_mul_mod(U1, U1, rbit, r_1, n, un_i);
+				U1 = dc_montgomery_mul_mod(U1, U1);
 				Utmp2 = U1;
-				U1 = dc_montgomery_mul_mod(Utmp1, Q, rbit, r_1, n, un_i);
+				U1 = dc_montgomery_mul_mod(Utmp1, Q);
 				U1 = dc_add_mod(U1, Utmp2, n);
 			}
 		}
 
-		U1 = dc_montgomery_mul_mod(U1, 1ULL, rbit, r_1, n, un_i);
+		U1 = dc_montgomery_mul_mod(U1, 1ULL);
 	}
 
 	return (U1 == 0);
