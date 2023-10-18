@@ -35,16 +35,18 @@ uint64_t dc_muladd_mod (uint64_t a, uint64_t b, uint64_t c, uint64_t m)
 	return rem;
 }
 
-uint64_t montgomery_mul_mod(uint64_t a, uint64_t b, uint64_t rbit,
+uint64_t dc_montgomery_mul_mod(uint64_t a, uint64_t b, uint64_t rbit,
 	uint64_t r_1, uint64_t n, uint64_t n_)
 {
 	unsigned __int128 t, m, rem128;
 	uint64_t rem, t_0;
 
-	t = (unsigned __int128) (a) * (b);
+	t = (unsigned __int128) a * b;
 	if (n >= 0x8000000000000000) {
-		m = (((t & 0xFFFFFFFFFFFFFFFF) * n_) & 0xFFFFFFFFFFFFFFFF);
-		m = m * (n);
+		rem = t;
+		m = (unsigned __int128) rem * n_;
+		rem = m;
+		m = (unsigned __int128) rem * n;
 		t_0 = (t & 1);
 		t >>= 1, m >>= 1;
 		rem128 = (t + m) >> 63;
@@ -53,12 +55,12 @@ uint64_t montgomery_mul_mod(uint64_t a, uint64_t b, uint64_t rbit,
 		if (t_0) rem = rem128 - n;
 		else {
 			rem = rem128;
-			if (rem >= (n)) rem -= (n);
+			if (rem >= n) rem -= n;
 		}
 	} else {
-		m = ((t & (r_1)) * (n_)) & (r_1);
-		rem = (t + m * (n)) >> (rbit);
-		if (rem >= (n)) rem -= (n);
+		m = ((t & r_1) * n_) & r_1;
+		rem = (t + m * n) >> rbit;
+		if (rem >= (n)) rem -= n;
 	}
 
 	return rem;
@@ -113,7 +115,7 @@ uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t n)
 	dc_montgomery_cached(n, &un_i, &rbit);
 
 	if (rbit == 64) {
-		r_1 = 0xFFFFFFFFFFFFFFFFLL;
+		r_1 = 0xFFFFFFFFFFFFFFFF;
 		x = -n;
 	} else {
 		r_1 = 1ULL << rbit;
@@ -124,11 +126,11 @@ uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t n)
 
 	for (; exp != 0; exp >>= 1) {
 		if (exp & 1)
-			x = montgomery_mul_mod(x, base, rbit, r_1, n, un_i);
-		base = montgomery_mul_mod(base, base, rbit, r_1, n, un_i);
+			x = dc_montgomery_mul_mod(x, base, rbit, r_1, n, un_i);
+		base = dc_montgomery_mul_mod(base, base, rbit, r_1, n, un_i);
 	}
 
-	x = montgomery_mul_mod(x, 1, rbit, r_1, n, un_i);
+	x = dc_montgomery_mul_mod(x, 1, rbit, r_1, n, un_i);
 
 	return x;
 }
