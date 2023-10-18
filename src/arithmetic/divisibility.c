@@ -75,7 +75,7 @@ uint64_t gcd (uint64_t a, uint64_t b)
 uint64_t fast_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t) {
 	uint64_t a2, a3, c0, c1, g;
 
-	quick_mul_div(a2, c0, a, b);
+	dc_mul_div(a2, c0, a, b);
 
 	if (a2 < 1) {
 		s[0] = 1;
@@ -83,7 +83,7 @@ uint64_t fast_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t) {
 		return b;
 	}
 
-	quick_mul_div(a3, c1, b, a2);
+	dc_mul_div(a3, c1, b, a2);
 
 	if (a3 < 1) {
 		s[0] = -c0;
