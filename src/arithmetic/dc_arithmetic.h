@@ -5,15 +5,13 @@
 #include <stddef.h>
 
 
-/* ntf/primes.c */
+/* arithmetic/primes */
 int dc_prime (uint64_t n);
 int dc_miller (uint64_t n);
 int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
 int32_t dc_find_jacobi (uint64_t n);
 int dc_lucas_p1 (uint64_t n, uint64_t Q);
 int dc_bpsw (uint64_t n);
-
-void er_sieve (int8_t *isprime, size_t limit);
 
 uint64_t dc_pcf_approx (uint64_t x);
 
@@ -23,7 +21,7 @@ void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int prim
 
 
 
-/* ntf/modulo.c */
+/* arithmetic/modulo */
 uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t n);
 #define dc_mul_mod(a, b, m) dc_muladd_mod(a, b, 0, m)
 uint64_t dc_muladd_mod (uint64_t a, uint64_t b, uint64_t c, uint64_t m);
@@ -33,7 +31,7 @@ void dc_montgomery_cached (uint64_t n, uint64_t *x);
 
 
 
-/* ntf/fibonacci.c*/
+/* arithmetic/fibonacci */
 #define log10_sqrt5 	0.349485002168009402393130552637753487L
 #define log10_phi   	0.208987640249978733769272089237555417L
 
@@ -43,7 +41,7 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m);
 
 
 
-/* ntf/divisibility.c */
+/* arithmetic/divisibility */
 #define is_odd(x) ((x) & 1)
 #define is_even(x) (is_odd(x) == 0)
 
@@ -76,13 +74,8 @@ uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
 
 
 
-/* Malloc Macros */
-#define malloc_sieve(is_prime, limit) \
-	do { \
-		is_prime = (int8_t *) malloc((limit)*sizeof(int8_t)); \
-		er_sieve (is_prime, limit); \
-	} while (0)
-
+/* arithmetic/alloc */
+int8_t *dc_alloc_sieve (size_t limit);
 
 #define malloc_primes(is_prime, primes, N, limit) \
 	do { \

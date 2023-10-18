@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <string.h>
 #include <math.h>
 #include "dc_arithmetic.h"
 
@@ -334,25 +333,6 @@ int dc_prime (uint64_t n)
 	if (n < 130000) return dc_s5_prime_ef(n);
 	if (n < 0x100000000) return dc_miller(n);
 	return dc_bpsw(n);
-}
-
-
-
-void er_sieve (int8_t *isprime, size_t limit)
-{
-	size_t i, j;
-
-	isprime[0] = 0, isprime[1] = 0;
-	memset(&isprime[2], 1, limit - 2);
-
-	for (i = 2; i * i < limit; i++) {
-		if (!isprime[i]) continue;
-
-		for (j = 2;; j++) {
-			if (i * j >= limit) break;
-			else isprime[i * j] = 0;
-		}
-	}
 }
 
 
