@@ -13,11 +13,11 @@ int32_t dc_find_jacobi (uint64_t n);
 int dc_lucas_p1 (uint64_t n, uint64_t Q);
 int dc_bpsw (uint64_t n);
 
-uint64_t dc_pcf_approx (uint64_t x);
 
-int mobius_f (int N, int *isprime);
-void mobius_setup (int *mobius, int limit, int *primes, int primes_size);
-void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int primes_size);
+
+/* arithmetic/ntf */
+uint64_t dc_pcf_approx (uint64_t x);
+uint64_t dc_primef_approx (uint64_t x);
 
 
 
@@ -62,11 +62,8 @@ int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, ui
 
 #define dc_mul_div(m, d, a, b) \
 	do { \
-		if (a < 2 * b) { \
-			m = a - b, d = 1; \
-		} else { \
-			m = a % b, d = a / b; \
-		} \
+		if (a < 2 * b) m = a - b, d = 1; \
+		else m = a % b, d = a / b; \
 	} while (0)
 
 uint64_t gcd (uint64_t m, uint64_t n);
@@ -76,16 +73,9 @@ uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
 
 /* arithmetic/alloc */
 int8_t *dc_alloc_sieve (size_t limit);
-
-#define malloc_primes(is_prime, primes, N, limit) \
-	do { \
-		malloc_sieve(is_prime, limit); \
-		primes = (typeof(primes)) malloc(dc_pcf_approx(limit) * sizeof(*primes)); \
-		N = 0; \
-		for (typeof(*primes) i = 2; i < (limit); i++) \
-			if (is_prime[i]) primes[N++] = i; \
-	} while (0)
-
+void dc_free_sieve ();
+uint32_t *dc_alloc_primes (size_t *size);
+void dc_free_primes ();
 
 #define malloc_factor_table(is_prime, primes, tablem, N, limit) \
 	do { \

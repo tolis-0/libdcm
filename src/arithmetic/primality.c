@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <math.h>
 #include "dc_arithmetic.h"
 
 
@@ -335,72 +334,3 @@ int dc_prime (uint64_t n)
 	return dc_bpsw(n);
 }
 
-
-uint64_t dc_pcf_approx (uint64_t x)
-{
-	if (x < 2) return 0;
-	return ceill(1.25506L*x/logl(x));
-}
-
-
-int mobius_f (int N, int* isprime)
-{
-	int i, p = 0, N_ = N, sq = (int) floor(sqrt(N));
-
-	if (isprime[N]) return -1;
-
-	if (N%2 == 0){
-		N >>= 1;
-		if (N%2 == 0) return 0;
-		p++;
-	}
-
-	// Check for prime factors > 2
-	for (i = 3; N > 1 && i <= sq; i += 2){
-		if (isprime[i] && N%i == 0) {
-			N /= i;
-			if (N%i == 0) return 0;
-			p++;
-		}
-	}
-
-	// Increasing p for primes that divide N above sqrt(N)
-	for (; N > 1 && i <= N_; i += 2){
-		if (isprime[i] && N%i == 0) {
-			N /= i;
-			p++;
-		}
-	}
-
-	return (p%2)? -1 : 1;
-}
-
-// for 1 <= n < limit
-// int mobius[limit] = {0};
-// primes_size is the size of the array primes[]
-// primes[] = {2,3,5,7,11,13,...}
-void mobius_setup (int *mobius, int limit, int *primes, int primes_size)
-{
-	mobius[1] = 1;
-	int i;
-	for (i = 0; i < primes_size; i++){
-		mobius[primes[i]] = -1;
-		rec_mob_setup(mobius, limit, primes[i], i, primes, primes_size);
-	}
-}
-
-// recursive mobius setup
-// num: 	number that called
-// number is of type: p0*p1*p2*...pn (squarefree)
-// i:		number of largest prime factor (pi) of caller number
-void rec_mob_setup(int *mobius, int limit, int num, int i, int *primes, int primes_size)
-{
-// n: 		new number generated
-	long n;
-	for (i++; i < primes_size; i++){
-		n = ((long) num)*primes[i];
-		if (n >= limit) return;
-		mobius[(int) n] = -mobius[num];
-		rec_mob_setup(mobius, limit, (int) n, i, primes, primes_size);
-	}
-}
