@@ -4,9 +4,11 @@
 
 
 static int8_t   *dc_sieve_ar = NULL;
-static size_t dc_sieve_size = 0;
+static size_t    dc_sieve_size = 0;
 static uint32_t *dc_prime_ar = NULL;
-static size_t dc_prime_size = 0;
+static size_t    dc_prime_size = 0;
+static uint32_t *dc_factor_ar = NULL;
+static size_t    dc_factor_size = 0;
 
 
 /* Allocates an array with the characteristic function of primes */
@@ -77,4 +79,35 @@ void dc_free_primes ()
 	free(dc_prime_ar);
 	dc_prime_ar = NULL;
 	dc_prime_size = 0;
+}
+
+
+/* 	Allocates a table with the smallest factor of each number.
+    Use simple division to get the rest                        */
+uint32_t *dc_alloc_factors (size_t limit) 
+{
+	size_t i, j;
+
+	dc_factor_ar = (uint32_t *) malloc(limit * sizeof(uint32_t));
+
+	memset(dc_factor_ar, 0, limit * sizeof(uint32_t));
+
+	for (i = 2; i * i < limit; i++) {
+		if (dc_factor_ar[i] > 0) continue;
+		dc_factor_ar[i] = i;
+
+		for (j = i * i; j <= limit; j += i)
+			if (dc_factor_ar[j] == 0) dc_factor_ar[j] = i;
+	}
+
+	dc_factor_size = limit;
+	return dc_factor_ar;
+}
+
+
+void dc_free_factors ()
+{
+	free(dc_factor_ar);
+	dc_factor_ar = NULL;
+	dc_factor_size = 0;
 }

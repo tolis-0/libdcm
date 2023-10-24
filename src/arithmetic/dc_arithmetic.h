@@ -58,7 +58,6 @@ typedef struct {
 } factor_l;
 
 uint16_t factoring_ft (uint32_t n, factor_i *factors, uint32_t *table);
-int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, uint32_t *table);
 
 #define dc_mul_div(m, d, a, b) \
 	do { \
@@ -76,12 +75,8 @@ int8_t *dc_alloc_sieve (size_t limit);
 void dc_free_sieve ();
 uint32_t *dc_alloc_primes (size_t *size);
 void dc_free_primes ();
-
-#define malloc_factor_table(is_prime, primes, tablem, N, limit) \
-	do { \
-		table = (uint32_t *) malloc((limit)*sizeof(uint32_t)); \
-		factor_table(is_prime, limit, primes, N, table); \
-	} while (0)
+uint32_t *dc_alloc_factors (size_t limit);
+void dc_free_factors ();
 
 
 

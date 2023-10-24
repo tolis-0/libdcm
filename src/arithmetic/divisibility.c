@@ -33,30 +33,6 @@ uint16_t factoring_ft (uint32_t n, factor_i *factors, uint32_t *table)
 	return no_pf + 1;
 }
 
-int factor_table (int *isprime, uint32_t limit, uint32_t *primes, uint32_t N, uint32_t *table) 
-{
-	uint32_t i, j, p;
-
-	table[0] = 0, table[1] = 1;
-
-	for (i = 2; i < limit; i++) {
-		if (isprime[i]) {
-			table[i] = i;
-			continue;
-		}
-
-		for (j = 0; j < N; j++) {
-			p = primes[j];
-			if (i % p == 0) {
-				table[i] = p;
-				break;
-			}
-		}
-
-		if (j == N) return 1;
-	}
-	return 0;
-}
 
 uint64_t gcd (uint64_t a, uint64_t b)
 {
