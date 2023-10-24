@@ -45,20 +45,20 @@ void dc_free_sieve ()
 /* Allocates an array with the prime numbers up to size */
 uint32_t *dc_alloc_primes (size_t *size)
 {
-	int i, j;
+	size_t i, j;
 
 	if (dc_sieve_ar == NULL) {
 		if (size == NULL || size[0] == 0) return NULL;
 
 		dc_alloc_sieve(dc_primef_approx(size[0]));
-		dc_sieve_ar = (uint32_t *) malloc(size[0] * sizeof(uint32_t));
+		dc_sieve_ar = (int8_t *) malloc(size[0] * sizeof(int8_t));
 
 		for (j = 0, i = 2; j < size[0]; i++)
 			if (dc_sieve_ar[i]) dc_prime_ar[j++] = i;
 
 		dc_free_sieve();
 	} else {
-		dc_sieve_ar = (uint32_t *) malloc(
+		dc_prime_ar = (uint32_t *) malloc(
 			dc_pcf_approx(dc_sieve_size) * sizeof(uint32_t));
 
 		for (j = 0, i = 2; i < dc_sieve_size; i++)
@@ -66,8 +66,8 @@ uint32_t *dc_alloc_primes (size_t *size)
 
 		size[0] = dc_prime_size = j;
 
-		dc_sieve_ar = (uint32_t *) realloc (
-			dc_sieve_ar, dc_prime_size * (sizeof(uint32_t)));
+		dc_prime_ar = (uint32_t *) realloc (
+			dc_prime_ar, dc_prime_size * (sizeof(uint32_t)));
 	}
 
 	return dc_prime_ar;
@@ -84,7 +84,7 @@ void dc_free_primes ()
 
 /* 	Allocates a table with the smallest factor of each number.
     Use simple division to get the rest                        */
-uint32_t *dc_alloc_factors (size_t limit) 
+uint32_t *dc_alloc_factors (size_t limit)
 {
 	size_t i, j;
 

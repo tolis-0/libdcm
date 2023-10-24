@@ -12,5 +12,5 @@ uint64_t dc_pcf_approx (uint64_t x)
 uint64_t dc_primef_approx (uint64_t x)
 {
 	if (x < 6) return 11;
-	return floorl(n * (logl(n) + logl(logl(n))));
+	return floorl(x * (logl(x) + logl(logl(x))));
 }
