@@ -11,8 +11,9 @@ uint64_t dc_muladd_mod (uint64_t a, uint64_t b, uint64_t c, uint64_t m)
 	uint64_t rem;
 
 	if (m <= 0x100000000)
-		return ((a > m ? (a % m) : a) * (b > m ? (b % m) : b)
-			+ ((c > 0x1FFFFFFFF) ? (c % m) : c)) % m;
+		return ((a > m ? (a % m) : a) *
+				(b > m ? (b % m) : b) +
+				(c > 0x1FFFFFFFF ? (c % m) : c)) % m;
 
 #ifdef __x86_64__
 	uint64_t low, high, result;
@@ -38,7 +39,8 @@ uint64_t dc_muladd_mod (uint64_t a, uint64_t b, uint64_t c, uint64_t m)
 	return rem;
 }
 
-uint64_t dc_montgomery_mul_mod(uint64_t a, uint64_t b)
+
+uint64_t dc_montgomery_mul_mod (uint64_t a, uint64_t b)
 {
 	unsigned __int128 t, m, rem128;
 	uint64_t rem, t_0;
@@ -68,17 +70,19 @@ uint64_t dc_montgomery_mul_mod(uint64_t a, uint64_t b)
 	return rem;
 }
 
-uint64_t dc_add_mod(uint64_t a, uint64_t b, uint64_t m)
+
+/* (a + b) % m*/
+uint64_t dc_add_mod (uint64_t a, uint64_t b, uint64_t m)
 {
 	uint64_t rem;
 	unsigned __int128 tmp128;
 
 	if (m < 0x8000000000000000) {
-		rem = ((a) >= (m) ? ((a) % (m)) : (a))
-			+ ((b) >= (m) ? ((b) % (m)) : (b));
-		if (rem > m) rem -= m;
+		rem = (a >= m ? (a % m) : a)
+			+ (b >= m ? (b % m) : b);
+		if (rem >= m) rem -= m;
 	} else {
-		tmp128 = (unsigned __int128) (a) + (b);
+		tmp128 = (unsigned __int128) (a >= m ? (a % m) : a) + (b >= m ? (b % m) : b);
 		if (tmp128 >> 64) {
 			rem = tmp128 - m;
 		} else {
@@ -92,30 +96,32 @@ uint64_t dc_add_mod(uint64_t a, uint64_t b, uint64_t m)
 
 
 /* (a ^ b) % m*/
-uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t n) 
+uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t m)
 {
 	uint64_t x;
-	
-	if (n <= 0x100000000) {
-		for (x = 1, base %= n; exp != 0; exp >>= 1){
-			if (exp & 1) x = (x * base) % n;
-			base = (base * base) % n;
+
+	if (m <= 0x100000000) {
+		if (m == 1) return 0;
+
+		for (x = 1, base %= m; exp != 0; exp >>= 1){
+			if (exp & 1) x = (x * base) % m;
+			base = (base * base) % m;
 		}
 
 		return x;
 	}
 
-	if ((n & 1) == 0) {
-		for (x = 1, base %= n; exp; exp >>= 1){
-			if (exp & 1) x = dc_mul_mod(x, base, n);
-			base = dc_mul_mod(base, base, n);
+	if ((m & 1) == 0) {
+		for (x = 1, base %= m; exp; exp >>= 1){
+			if (exp & 1) x = dc_mul_mod(x, base, m);
+			base = dc_mul_mod(base, base, m);
 		}
 
 		return x;
 	}
 
-	dc_montgomery_cached(n, &x);
-	base = dc_mul_mod(base, x, n);
+	dc_montgomery_cached(m, &x);
+	base = dc_mul_mod(base, x, m);
 
 	for (; exp != 0; exp >>= 1) {
 		if (exp & 1) x = dc_montgomery_mul_mod(x, base);
