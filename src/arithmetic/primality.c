@@ -263,15 +263,6 @@ int dc_bpsw (uint64_t n)
 
 	for (d = n - 1, s = 0; d % 2 == 0; d >>= 1, s++);
 
-	if (d < (1UL << s)) {
-		if (n == 5) return 1;
-		D = dc_find_jacobi(n);
-		if (D == 0) return 0;
-		if (D < 0) D += n;
-		if (dc_exp_mod(D, (n-1)/2, n) == n - 1) return 1;
-		return 0;
-	}
-
 	/* Miller–Rabin test base 2 */
 	if (dc_mr_test(n, d, s, 2)) return 0;
 
@@ -287,6 +278,7 @@ int dc_bpsw (uint64_t n)
 		negQ = -tmp;
 	}
 
+	/* Lucas test with P = 1 and Q = (1-D)/4 */
 	return dc_lucas_p1(n, negQ);
 }
 
