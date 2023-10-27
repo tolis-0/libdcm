@@ -11,7 +11,8 @@ uint64_t dc_muladd_mod (uint64_t a, uint64_t b, uint64_t c, uint64_t m)
 	uint64_t rem;
 
 	if (m <= 0x100000000)
-		return ((a > m ? (a % m) : a) * (b > m ? (b % m) : b) + c) % m;
+		return ((a > m ? (a % m) : a) * (b > m ? (b % m) : b)
+			+ ((c > 0x1FFFFFFFF) ? (c % m) : c)) % m;
 
 #ifdef __x86_64__
 	uint64_t low, high, result;
