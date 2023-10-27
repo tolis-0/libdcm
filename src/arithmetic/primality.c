@@ -258,7 +258,7 @@ int dc_bpsw (uint64_t n)
 	int32_t D;
 
 	if (n < 2) return 0;
-	if (n == 2 || n == 11) return 1;
+	if (n == 2) return 1;
 	if (n % 2 == 0) return 0;
 
 	for (d = n - 1, s = 0; d % 2 == 0; d >>= 1, s++);
@@ -267,6 +267,7 @@ int dc_bpsw (uint64_t n)
 	if (dc_mr_test(n, d, s, 2)) return 0;
 
 
+	if (n == 5 || n == 11) return 1;
 	D = dc_find_jacobi(n);
 	if (D == 0) return 0;
 
