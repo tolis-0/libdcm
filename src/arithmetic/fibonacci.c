@@ -34,39 +34,96 @@ uint64_t dc_pisano (uint64_t n) {
 
 
 /* nth Fibonacci number mod m */
-// currently works for low values of m
 uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 {
-	uint64_t k, f_n0, f_n1, utmp;
-	int64_t stmp;
+	uint64_t k, f_n0, f_n1, tmp, tmp2;
 	int method[64], i;
 
 	if (n < 10) return dc_fib_ar[n] % m;
 
-	for (k = n/2, i = 0; k > 8; k /= 2, i++)
-		method[i] = (k & 1);
+	for (k = n/2, i = 0; k > 8; k /= 2, i++) method[i] = (k & 1);
 
 	f_n0 = (dc_fib_ar[k] > m) ? (dc_fib_ar[k] % m) : dc_fib_ar[k];
 	f_n1 = (dc_fib_ar[k+1] > m) ? (dc_fib_ar[k+1] % m) : dc_fib_ar[k+1];
 
+	if (m < 0x80000000) {
+		for (i--; i >= 0; i--) {
+			if (method[i]) {
+				tmp = ((2 * f_n0 + f_n1) * f_n1) % m;
+				f_n0 = (f_n0 * f_n0 + f_n1 * f_n1) % m;
+				f_n1 = tmp;
+			} else {
+				tmp = ((2 * f_n1 + (m - f_n0)) * f_n0) % m;
+				f_n1 = (f_n0 * f_n0 + f_n1 * f_n1) % m;
+				f_n0 = tmp;
+			}
+		}
+
+		if (n & 1) return (f_n0 * f_n0 + f_n1 * f_n1) % m;
+		return ((2 * f_n1 + (m - f_n0)) * f_n0) % m;
+	}
+
+	if ((m & 1) == 0 || n < 0x10000) {
+		for (i--; i >= 0; i--) {
+			if (method[i]) {
+				tmp = dc_add_mod(dc_add_mod(f_n0, f_n0, m), f_n1, m);
+				tmp = dc_mul_mod(tmp, f_n1, m);
+				f_n0 = dc_mul_mod(f_n0, f_n0, m);
+				f_n0 = dc_add_mod(dc_mul_mod(f_n1, f_n1, m), f_n0, m);
+				f_n1 = tmp;
+			} else {
+				tmp = dc_add_mod(dc_add_mod(f_n1, f_n1, m), m - f_n0, m);
+				tmp = dc_mul_mod(tmp, f_n0, m);
+				f_n1 = dc_mul_mod(f_n1, f_n1, m);
+				f_n1 = dc_add_mod(dc_mul_mod(f_n0, f_n0, m), f_n1, m);
+				f_n0 = tmp;
+			}
+		}
+
+		if (n & 1) {
+			tmp = dc_mul_mod(f_n0, f_n0, m);
+			f_n0 = dc_add_mod(dc_mul_mod(f_n1, f_n1, m), tmp, m);
+		} else {
+			tmp = dc_add_mod(dc_add_mod(f_n1, f_n1, m), m - f_n0, m);
+			f_n0 = dc_mul_mod(tmp, f_n0, m);
+		}
+
+		return f_n0;
+	}
+
+	dc_montgomery_cached(m, &tmp);
+	f_n0 = dc_mul_mod(f_n0, tmp, m);
+	f_n1 = dc_mul_mod(f_n1, tmp, m);
+
 	for (i--; i >= 0; i--) {
 		if (method[i]) {
-			utmp = ((2 * f_n0 + f_n1) * f_n1) % m;
-			f_n0 = (f_n0 * f_n0 + f_n1 * f_n1) % m;
-			f_n1 = utmp;
+			tmp = dc_add_mod(f_n0, f_n0, m);
+			tmp = dc_add_mod(tmp, f_n1, m);
+			tmp = dc_montgomery_mul_mod(tmp, f_n1);
+			tmp2 = dc_montgomery_mul_mod(f_n0, f_n0);
+			f_n0 = dc_montgomery_mul_mod(f_n1, f_n1);
+			f_n0 = dc_add_mod(f_n0, tmp2, m);
+			f_n1 = tmp;
 		} else {
-			stmp = 2 * (int64_t) f_n1 - (int64_t) f_n0;
-			stmp = (stmp * (int64_t) f_n0) % (int64_t) m;
-			if (stmp < 0) stmp += m;
-			f_n1 = (f_n0 * f_n0 + f_n1 * f_n1) % m;
-			f_n0 = (uint64_t) stmp;
+			tmp = dc_add_mod(f_n1, f_n1, m);
+			tmp = dc_add_mod(tmp, m - f_n0, m);
+			tmp = dc_montgomery_mul_mod(tmp, f_n0);
+			tmp2 = dc_montgomery_mul_mod(f_n0, f_n0);
+			f_n1 = dc_montgomery_mul_mod(f_n1, f_n1);
+			f_n1 = dc_add_mod(f_n1, tmp2, m);
+			f_n0 = tmp;
 		}
 	}
 
-	if (n & 1) return (f_n0 * f_n0 + f_n1 * f_n1) % m;
+	if (n & 1) {
+		f_n1 = dc_montgomery_mul_mod(f_n1, f_n1);
+		f_n0 = dc_montgomery_mul_mod(f_n0, f_n0);
+		f_n0 = dc_add_mod(f_n0, f_n1, m);
+	} else {
+		tmp = dc_add_mod(f_n1, f_n1, m);
+		tmp = dc_add_mod(tmp, m - f_n0, m);
+		f_n0 = dc_montgomery_mul_mod(tmp, f_n0);
+	}
 
-	stmp = 2 * (int64_t) f_n1 - (int64_t) f_n0;
-	stmp = (stmp * (int64_t) f_n0) % (int64_t) m;
-	if (stmp < 0) stmp += m;
-	return (uint64_t) stmp;
+	return dc_montgomery_mul_mod(f_n0, 1);
 }
