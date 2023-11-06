@@ -19,14 +19,18 @@ uint64_t dc_primef_approx (uint64_t n)
 
 uint64_t dc_sqrt(uint64_t n)
 {
-	uint64_t r0, r1, r2;
+	uint64_t x = n, c = 0, d = 0x4000000000000000;
 
-	if (n == 0) return 0;
+	while (d > n) d >>= 2;
 
-	for (r0 = 1, r1 = n;; r0 = r1, r1 = r2) {
-		r2 = (r1 + (n / r1)) / 2;
-		if (r0 == r1 || r0 == r2) break;
+	for (; d != 0; d >>= 2) {
+		if (x >= c + d) {
+			x -= c + d;
+			c = (c >> 1) + d;
+		} else {
+			c >>= 1;
+		}
 	}
 
-	return (r0 < r1) ? r0 : r1;
+	return c;
 }
