@@ -16,8 +16,9 @@ int dc_bpsw (uint64_t n);
 
 
 /* arithmetic/ntf */
-uint64_t dc_pcf_approx (uint64_t x);
-uint64_t dc_primef_approx (uint64_t x);
+uint64_t dc_pcf_approx (uint64_t n);
+uint64_t dc_primef_approx (uint64_t n);
+uint64_t dc_sqrt(uint64_t n);
 
 
 

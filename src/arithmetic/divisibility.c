@@ -16,7 +16,8 @@ uint64_t dc_gcd (uint64_t a, uint64_t b)
 }
 
 
-uint64_t dc_fast_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t) {
+uint64_t _dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
+{
 	uint64_t a2, a3, c0, c1, g;
 
 	dc_mul_div(a2, c0, a, b);
@@ -35,7 +36,7 @@ uint64_t dc_fast_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t) {
 		return a2;
 	}
 
-	g = dc_fast_ext_gcd (a2, a3, s, t);
+	g = _dc_ext_gcd (a2, a3, s, t);
 	t[0] -= c1 * s[0];
 	s[0] -= c0 * t[0];
 
@@ -57,6 +58,6 @@ uint64_t dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
 		return a;
 	}
 
-	if (a > b) return dc_fast_ext_gcd(a, b, t, s);
-	else return dc_fast_ext_gcd(b, a, s, t);
+	if (a > b) return _dc_ext_gcd(a, b, t, s);
+	else return _dc_ext_gcd(b, a, s, t);
 }
