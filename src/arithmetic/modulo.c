@@ -62,8 +62,13 @@ uint64_t dc_montgomery_mul_mod (uint64_t a, uint64_t b)
 			if (rem >= cached_n) rem -= cached_n;
 		}
 	} else {
-		m = ((t & _mask) * _un_i) & _mask;
-		rem = (t + m * cached_n) >> _rbit;
+		rem = t;
+		rem &= _mask;
+		m = ((unsigned __int128) rem * _un_i);
+		rem = m;
+		rem &= _mask;
+		rem128 = t + (unsigned __int128) rem * (unsigned __int128) cached_n;
+		rem = rem128 >> _rbit;
 		if (rem >= cached_n) rem -= cached_n;
 	}
 
