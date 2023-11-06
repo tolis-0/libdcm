@@ -32,8 +32,8 @@ void dc_montgomery_cached (uint64_t n, uint64_t *x);
 
 
 /* arithmetic/fibonacci */
-#define log10_sqrt5 	0.349485002168009402393130552637753487L
-#define log10_phi   	0.208987640249978733769272089237555417L
+#define dc_log10_sqrt5 	0.349485002168009402393130552637753487L
+#define dc_log10_phi   	0.208987640249978733769272089237555417L
 
 uint64_t dc_fib_digits (uint64_t n);
 uint64_t dc_pisano (uint64_t n);
@@ -42,31 +42,14 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m);
 
 
 /* arithmetic/divisibility */
-#define is_odd(x) ((x) & 1)
-#define is_even(x) (is_odd(x) == 0)
-
-#define max_factors_i 9
-typedef struct {
-	uint32_t prime;
-	uint16_t exp;
-} factor_i;
-
-#define max_factors_l 15
-typedef struct {
-	uint64_t prime;
-	uint16_t exp;
-} factor_l;
-
-uint16_t factoring_ft (uint32_t n, factor_i *factors, uint32_t *table);
-
 #define dc_mul_div(m, d, a, b) \
 	do { \
 		if (a < 2 * b) m = a - b, d = 1; \
 		else m = a % b, d = a / b; \
 	} while (0)
 
-uint64_t gcd (uint64_t m, uint64_t n);
-uint64_t ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
+uint64_t dc_gcd (uint64_t m, uint64_t n);
+uint64_t dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
 
 
 

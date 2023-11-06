@@ -150,11 +150,11 @@ void dc_montgomery_cached (uint64_t n, uint64_t *x)
 	_rbit++;
 
 	if (_rbit == 64) {
-		ext_gcd(n, -n, &n_i, &tmp);
+		dc_ext_gcd(n, -n, &n_i, &tmp);
 		_un_i = tmp - n_i;
 	} else {
 		_mask <<= 1;
-		ext_gcd(_mask, n, &tmp, &n_i);
+		dc_ext_gcd(_mask, n, &tmp, &n_i);
 		if (n_i < 0) _un_i = - n_i;
 		else _un_i = _mask - n_i;
 	}

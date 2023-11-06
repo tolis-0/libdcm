@@ -9,7 +9,7 @@ uint64_t dc_fib_digits (uint64_t n) {
 	long double log10_fib;
 
 	if (n < 7) return 1L;
-	log10_fib = n*log10_phi - log10_sqrt5;
+	log10_fib = n * dc_log10_phi - dc_log10_sqrt5;
 
 	return (uint64_t) ceill(log10_fib);
 }
