@@ -284,8 +284,7 @@ int dc_bpsw (uint64_t n)
 }
 
 
-/* Main prime function */
-int dc_prime (uint64_t n)
+int dc_pr_check_div (uint64_t n)
 {
 	if (n < 2) return 0;
 	if (n % 2 == 0) return n == 2;
@@ -323,8 +322,35 @@ int dc_prime (uint64_t n)
 	if (n % 127 == 0) return 0;
 	if (n % 131 == 0) return 0;
 
+	return -1;
+}
+
+
+/* Main prime function */
+int dc_prime (uint64_t n)
+{
+	int dv;
+
+	dv = dc_pr_check_div(n);
+	if (dv >= 0) return dv;
+
 	if (n < 130000) return dc_s5_prime_ef(n);
 	if (n < 0x100000000) return dc_miller(n);
 	return dc_bpsw(n);
 }
 
+
+int dc_likely_prime (uint64_t n)
+{
+	int dv;
+
+	if (n < 130000) {
+		dv = dc_pr_check_div(n);
+		if (dv >= 0) return dv;
+
+		return dc_s5_prime_ef(n);
+	}
+
+	if (n < 0x100000000) return dc_miller(n);
+	return dc_bpsw(n);
+}
