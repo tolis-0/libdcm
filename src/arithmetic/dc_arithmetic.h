@@ -13,7 +13,7 @@ int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
 int32_t dc_find_jacobi (uint64_t n);
 int dc_lucas_p1 (uint64_t n, uint64_t Q);
 int dc_bpsw (uint64_t n);
-
+int dc_selfridge_conjecture (uint64_t n);
 
 
 /* arithmetic/ntf */
