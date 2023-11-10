@@ -351,6 +351,19 @@ int dc_likely_prime (uint64_t n)
 		return dc_s5_prime_ef(n);
 	}
 
+/*	if ((n & 1) == 0) return n == 2;
+
+	if (n < 8611757571 && (n % 5 == 2 || n % 5 == 3))
+		return dc_selfridge_conjecture(n);*/
+
 	if (n < 0x100000000) return dc_miller(n);
 	return dc_bpsw(n);
+}
+
+
+int dc_selfridge_conjecture (uint64_t n)
+{
+	if (dc_exp_mod(2, n - 1, n) != 1) return 0;
+	if (dc_fib_mod(n + 1, n) != 0) return 0;
+	return 1;
 }
