@@ -2,7 +2,7 @@
 #include "dc_arithmetic.h"
 
 
-static uint64_t cached_n = 0, _mask, _un_i, _rbit;
+static __thread uint64_t cached_n = 0, _mask, _un_i, _rbit;
 
 /* (a * b + c) % m */
 uint64_t dc_muladd_mod (uint64_t a, uint64_t b, uint64_t c, uint64_t m)
