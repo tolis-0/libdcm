@@ -2,7 +2,15 @@
 #include <math.h>
 #include "dc_arithmetic.h"
 
-static uint32_t dc_fib_ar[10] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34};
+
+static const uint32_t dc_fib_ar[48] = {0, 1, 1, 2, 3, 5, 8, 13,
+	21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765,
+	10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811,
+	514229, 832040, 1346269, 2178309, 3524578, 5702887, 9227465,
+	14930352, 24157817, 39088169, 63245986, 102334155, 165580141,
+	267914296, 433494437, 701408733, 1134903170, 1836311903, 2971215073
+};
+
 
 /* Number of digits of nth Fibonacci number */
 uint64_t dc_fib_digits (uint64_t n) {
@@ -39,9 +47,9 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 	uint64_t k, f_n0, f_n1, tmp, tmp2;
 	int method[64], i;
 
-	if (n < 10) return dc_fib_ar[n] % m;
+	if (n < 48) return dc_fib_ar[n] % m;
 
-	for (k = n/2, i = 0; k > 8; k /= 2, i++) method[i] = (k & 1);
+	for (k = n/2, i = 0; k > 46; k /= 2, i++) method[i] = (k & 1);
 
 	f_n0 = (dc_fib_ar[k] > m) ? (dc_fib_ar[k] % m) : dc_fib_ar[k];
 	f_n1 = (dc_fib_ar[k+1] > m) ? (dc_fib_ar[k+1] % m) : dc_fib_ar[k+1];
@@ -69,20 +77,20 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 				tmp = dc_add_mod(dc_add_mod(f_n0, f_n0, m), f_n1, m);
 				tmp = dc_mul_mod(tmp, f_n1, m);
 				f_n0 = dc_mul_mod(f_n0, f_n0, m);
-				f_n0 = dc_add_mod(dc_mul_mod(f_n1, f_n1, m), f_n0, m);
+				f_n0 = dc_muladd_mod(f_n1, f_n1, f_n0, m);
 				f_n1 = tmp;
 			} else {
 				tmp = dc_add_mod(dc_add_mod(f_n1, f_n1, m), m - f_n0, m);
 				tmp = dc_mul_mod(tmp, f_n0, m);
 				f_n1 = dc_mul_mod(f_n1, f_n1, m);
-				f_n1 = dc_add_mod(dc_mul_mod(f_n0, f_n0, m), f_n1, m);
+				f_n1 = dc_muladd_mod(f_n0, f_n0, f_n1, m);
 				f_n0 = tmp;
 			}
 		}
 
 		if (n & 1) {
 			tmp = dc_mul_mod(f_n0, f_n0, m);
-			f_n0 = dc_add_mod(dc_mul_mod(f_n1, f_n1, m), tmp, m);
+			f_n0 = dc_muladd_mod(f_n1, f_n1, tmp, m);
 		} else {
 			tmp = dc_add_mod(dc_add_mod(f_n1, f_n1, m), m - f_n0, m);
 			f_n0 = dc_mul_mod(tmp, f_n0, m);

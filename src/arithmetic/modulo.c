@@ -122,6 +122,31 @@ uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t m)
 }
 
 
+/* (2 ^ b) % m */
+uint64_t dc_2exp_mod (uint64_t exp, uint64_t m)
+{
+	uint64_t n, k;
+
+	n = 0;
+	k = 1;
+
+	while (exp > 1) {
+		if (exp & 1) {
+			exp--;
+			n += k;
+		} else {
+			if (k == 32) break;
+			exp >>= 1;
+			k <<= 1;
+		}
+	}
+
+	/* (2^n)*(2^k)^exp mod m */
+	if (exp == 1) return dc_mul_mod (1ULL << n, 1ULL << k, m);
+	return dc_mul_mod (1ULL << n, dc_exp_mod(1ULL << k, exp, m), m);
+}
+
+
 void dc_montgomery_cached (uint64_t n, uint64_t *x)
 {
 	int64_t tmp, n_i;

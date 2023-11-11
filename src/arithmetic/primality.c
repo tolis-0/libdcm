@@ -2,6 +2,8 @@
 #include <math.h>
 #include "dc_arithmetic.h"
 
+#define sc_limit 60050192893 ## ULL
+
 
 /* Skips multiples of 2, 3 and 5 but starts with 211 for dc_prime */
 int dc_s5_prime_ef (uint64_t n)
@@ -82,7 +84,7 @@ int dc_miller (uint64_t n)
 		return 1;
 	}
 
-	if (n < 1122004669633) {
+	if (n < 1122004669633ULL) {
 		if (dc_mr_test(n, d, s, 13)) return 0;
 		if (dc_mr_test(n, d, s, 2)) return 0;
 		if (dc_mr_test(n, d, s, 23)) return 0;
@@ -95,14 +97,14 @@ int dc_miller (uint64_t n)
 	if (dc_mr_test(n, d, s, 5)) return 0;
 	if (dc_mr_test(n, d, s, 3)) return 0;
 	if (dc_mr_test(n, d, s, 2)) return 0;
-	if (n < 2152302898747) return 1;
+	if (n < 2152302898747ULL) return 1;
 	if (dc_mr_test(n, d, s, 13)) return 0;
-	if (n < 3474749660383) return 1;
+	if (n < 3474749660383ULL) return 1;
 	if (dc_mr_test(n, d, s, 17)) return 0;
-	if (n < 341550071728321) return 1;
+	if (n < 341550071728321ULL) return 1;
 	if (dc_mr_test(n, d, s, 19)) return 0;
 	if (dc_mr_test(n, d, s, 23)) return 0;
-	if (n < 3825123056546413051) return 1;
+	if (n < 3825123056546413051ULL) return 1;
 	if (dc_mr_test(n, d, s, 29)) return 0;
 	if (dc_mr_test(n, d, s, 31)) return 0;
 	if (dc_mr_test(n, d, s, 37)) return 0;
@@ -284,6 +286,7 @@ int dc_bpsw (uint64_t n)
 }
 
 
+/* Does some divisibility checks */
 int dc_pr_check_div (uint64_t n)
 {
 	if (n < 2) return 0;
@@ -329,19 +332,28 @@ int dc_pr_check_div (uint64_t n)
 /* Main prime function */
 int dc_prime (uint64_t n)
 {
+	uint64_t rem;
 	int dv;
 
 	dv = dc_pr_check_div(n);
 	if (dv >= 0) return dv;
 
 	if (n < 130000) return dc_s5_prime_ef(n);
+
+	rem = n % 5;
+	if (n < sc_limit && (rem == 2 || rem == 3))
+		return dc_selfridge_conjecture(n);
+
 	if (n < 0x100000000) return dc_miller(n);
+
 	return dc_bpsw(n);
 }
 
 
+/* Similar to dc_prime, performs better on prime inputs */
 int dc_likely_prime (uint64_t n)
 {
+	uint64_t rem;
 	int dv;
 
 	if (n < 130000) {
@@ -351,19 +363,21 @@ int dc_likely_prime (uint64_t n)
 		return dc_s5_prime_ef(n);
 	}
 
-/*	if ((n & 1) == 0) return n == 2;
+	if ((n & 1) == 0) return n == 2;
 
-	if (n < 8611757571 && (n % 5 == 2 || n % 5 == 3))
-		return dc_selfridge_conjecture(n);*/
+	rem = n % 5;
+	if (n < sc_limit && (rem == 2 || rem == 3))
+		return dc_selfridge_conjecture(n);
 
 	if (n < 0x100000000) return dc_miller(n);
 	return dc_bpsw(n);
 }
 
 
+/* Selfridge's conjecture about primality testing */
 int dc_selfridge_conjecture (uint64_t n)
 {
-	if (dc_exp_mod(2, n - 1, n) != 1) return 0;
+	if (dc_2exp_mod(n - 1, n) != 1) return 0;
 	if (dc_fib_mod(n + 1, n) != 0) return 0;
 	return 1;
 }

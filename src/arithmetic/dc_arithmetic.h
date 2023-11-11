@@ -25,6 +25,7 @@ uint64_t dc_sqrt(uint64_t n);
 
 /* arithmetic/modulo */
 uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t n);
+uint64_t dc_2exp_mod (uint64_t exp, uint64_t m);
 #define dc_mul_mod(a, b, m) dc_muladd_mod(a, b, 0, m)
 uint64_t dc_muladd_mod (uint64_t a, uint64_t b, uint64_t c, uint64_t m);
 uint64_t dc_add_mod(uint64_t a, uint64_t b, uint64_t m);
