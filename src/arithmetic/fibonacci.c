@@ -74,13 +74,13 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 	if ((m & 1) == 0 || n < 0x10000) {
 		for (i--; i >= 0; i--) {
 			if (method[i]) {
-				tmp = dc_add_mod(dc_add_mod(f_n0, f_n0, m), f_n1, m);
+				tmp = dc_radd_mod(dc_radd_mod(f_n0, f_n0, m), f_n1, m);
 				tmp = dc_mul_mod(tmp, f_n1, m);
 				f_n0 = dc_mul_mod(f_n0, f_n0, m);
 				f_n0 = dc_muladd_mod(f_n1, f_n1, f_n0, m);
 				f_n1 = tmp;
 			} else {
-				tmp = dc_add_mod(dc_add_mod(f_n1, f_n1, m), m - f_n0, m);
+				tmp = dc_radd_mod(dc_radd_mod(f_n1, f_n1, m), m - f_n0, m);
 				tmp = dc_mul_mod(tmp, f_n0, m);
 				f_n1 = dc_mul_mod(f_n1, f_n1, m);
 				f_n1 = dc_muladd_mod(f_n0, f_n0, f_n1, m);
@@ -92,7 +92,7 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 			tmp = dc_mul_mod(f_n0, f_n0, m);
 			f_n0 = dc_muladd_mod(f_n1, f_n1, tmp, m);
 		} else {
-			tmp = dc_add_mod(dc_add_mod(f_n1, f_n1, m), m - f_n0, m);
+			tmp = dc_radd_mod(dc_radd_mod(f_n1, f_n1, m), m - f_n0, m);
 			f_n0 = dc_mul_mod(tmp, f_n0, m);
 		}
 
@@ -105,20 +105,20 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 
 	for (i--; i >= 0; i--) {
 		if (method[i]) {
-			tmp = dc_add_mod(f_n0, f_n0, m);
-			tmp = dc_add_mod(tmp, f_n1, m);
+			tmp = dc_radd_mod(f_n0, f_n0, m);
+			tmp = dc_radd_mod(tmp, f_n1, m);
 			tmp = dc_montgomery_mul_mod(tmp, f_n1);
 			tmp2 = dc_montgomery_mul_mod(f_n0, f_n0);
 			f_n0 = dc_montgomery_mul_mod(f_n1, f_n1);
-			f_n0 = dc_add_mod(f_n0, tmp2, m);
+			f_n0 = dc_radd_mod(f_n0, tmp2, m);
 			f_n1 = tmp;
 		} else {
-			tmp = dc_add_mod(f_n1, f_n1, m);
-			tmp = dc_add_mod(tmp, m - f_n0, m);
+			tmp = dc_radd_mod(f_n1, f_n1, m);
+			tmp = dc_radd_mod(tmp, m - f_n0, m);
 			tmp = dc_montgomery_mul_mod(tmp, f_n0);
 			tmp2 = dc_montgomery_mul_mod(f_n0, f_n0);
 			f_n1 = dc_montgomery_mul_mod(f_n1, f_n1);
-			f_n1 = dc_add_mod(f_n1, tmp2, m);
+			f_n1 = dc_radd_mod(f_n1, tmp2, m);
 			f_n0 = tmp;
 		}
 	}
@@ -126,10 +126,10 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 	if (n & 1) {
 		f_n1 = dc_montgomery_mul_mod(f_n1, f_n1);
 		f_n0 = dc_montgomery_mul_mod(f_n0, f_n0);
-		f_n0 = dc_add_mod(f_n0, f_n1, m);
+		f_n0 = dc_radd_mod(f_n0, f_n1, m);
 	} else {
-		tmp = dc_add_mod(f_n1, f_n1, m);
-		tmp = dc_add_mod(tmp, m - f_n0, m);
+		tmp = dc_radd_mod(f_n1, f_n1, m);
+		tmp = dc_radd_mod(tmp, m - f_n0, m);
 		f_n0 = dc_montgomery_mul_mod(tmp, f_n0);
 	}
 
