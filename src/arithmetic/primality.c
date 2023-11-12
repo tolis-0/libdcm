@@ -2,7 +2,7 @@
 #include <math.h>
 #include "dc_arithmetic.h"
 
-#define sc_limit 60050192893 ## ULL
+#define sc_limit 611554136235 ## ULL
 
 
 /* Skips multiples of 2, 3 and 5 but starts with 211 for dc_prime */

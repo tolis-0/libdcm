@@ -14,4 +14,7 @@
 #endif
 
 
+#undef _DC_THREADS
+
+
 #endif // _DCMATH_H
