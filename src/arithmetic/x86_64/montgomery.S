@@ -44,16 +44,14 @@ dc_montgomery_mul_mod:
 	# _rbit = 64
 	mulq	%r9			# m (rdx:rax) = m (rax) * _un_i (r9)
 	mulq	%r10		# m (rdx:rax) = m (rax) * cached_n (r10)
+	xorq	%r11, %r11
 	addq	%rsi, %rax
 	adcx	%rdi, %rdx	# rem128 (CF:rdx:rax) = t (rdi:rsi) + m (rdx:rax)
 	movq	%rdx, %rax
-	jc	.Lsub
+	cmovcq	%r10, %r11
 	cmpq	%r10, %rdx
-	jae .Lsub
-	ret
-
-.Lsub:
-	subq	%r10, %rax	# rem (rax) -= cached_n (r10)
+	cmovaeq	%r10, %r11
+	subq	%r11, %rax	# (u >= n) ? u - n : u
 	ret
 
 
