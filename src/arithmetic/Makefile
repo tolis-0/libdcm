@@ -26,5 +26,4 @@ clean:
 	rm -f *.o
 ifeq ($(ARCHITECTURE),x86_64)
 	cd x86_64 && make clean
-	cp x86_64/*.o .
 endif
