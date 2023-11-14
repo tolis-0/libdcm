@@ -34,8 +34,9 @@ dc_montgomery_mul_mod:
 	addq	%rsi, %rax
 	adcx	%rdi, %rdx	# rem128 (rdx:rax) = t (rdi:rsi) + (m*n) (rdx:rax)
 	shrdq	%cl, %rdx, %rax	# rem128 (rax) >>= _rbit;
-	cmpq	%r10, %rax
-	jae .Lsub
+	movq	%rax, %rdx
+	subq	%r10, %rdx
+	cmovaeq	%rdx, %rax
 	ret
 
 .L64_bit:
