@@ -3,6 +3,7 @@ CFLAGS = -g -O2 -Wall -Wextra
 ARCHITECTURE = $(shell uname -m)
 
 ifeq ($(ARCHITECTURE),x86_64)
+	override CFLAGS += -D _dc_arch_x86_64
 	SOURCEF = $(filter-out montgomery.c, $(wildcard *.c))
 else
 	SOURCEF = $(wildcard *.c)

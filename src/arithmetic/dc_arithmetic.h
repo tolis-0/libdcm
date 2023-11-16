@@ -35,6 +35,9 @@ uint64_t dc_radd_mod (uint64_t a, uint64_t b, uint64_t m);
 
 /* arithmetic/montgomery */
 uint64_t dc_montgomery_mul_mod (uint64_t a, uint64_t b);
+#ifdef _dc_arch_x86_64
+uint64_t dc_montgomery_dmul_mod (uint64_t *a, uint64_t b);
+#endif
 void dc_montgomery_cached (uint64_t n, uint64_t *x);
 
 

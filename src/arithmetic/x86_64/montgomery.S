@@ -34,6 +34,50 @@ dc_montgomery_mul_mod:
 
 
 	.p2align 4
+	.globl	dc_montgomery_dmul_mod
+	.type	dc_montgomery_dmul_mod, @function
+# uint64_t dc_montgomery_dmul_mod (uint64_t *a (rdi), uint64_t b (rsi))
+dc_montgomery_dmul_mod:
+
+	movq	0(%rdi), %rax
+	mulq	%rsi		# t (rdx:rax) = a (rax) * b (rsi)
+	movq	%rsi, %rcx	# (rcx) holds copy of b
+	movq	%rdi, %r8	# (r8) holds copy of address for a
+	movq	_un_i(%rip), %r9
+	movq	cached_n(%rip), %r10
+	movq	%rax, %rsi
+	movq	%rdx, %rdi	# t (rdi:rsi) copy
+	mulq	%r9			# m (rdx:rax) = m (rax) * _un_i (r9)
+	mulq	%r10		# m (rdx:rax) = m (rax) * cached_n (r10)
+	xorq	%r11, %r11
+	addq	%rsi, %rax
+	adcx	%rdi, %rdx	# rem128 (CF:rdx:rax) = t (rdi:rsi) + m (rdx:rax)
+	movq	%rdx, %rax
+	cmovcq	%r10, %r11
+	cmpq	%r10, %rdx
+	cmovaeq	%r10, %r11
+	subq	%r11, %rax	# (u >= n) ? u - n : u
+	movq	%rax, (%r8)	# stores back a
+
+	movq	%rcx, %rax
+	mulq	%rcx		# t (rdx:rax) = a (rax) * b (rcx)
+	movq	%rax, %rsi
+	movq	%rdx, %rdi	# t (rdi:rsi) copy
+	mulq	%r9			# m (rdx:rax) = m (rax) * _un_i (r9)
+	mulq	%r10		# m (rdx:rax) = m (rax) * cached_n (r10)
+	xorq	%r11, %r11
+	addq	%rsi, %rax
+	adcx	%rdi, %rdx	# rem128 (CF:rdx:rax) = t (rdi:rsi) + m (rdx:rax)
+	movq	%rdx, %rax
+	cmovcq	%r10, %r11
+	cmpq	%r10, %rdx
+	cmovaeq	%r10, %r11
+	subq	%r11, %rax	# (u >= n) ? u - n : u
+	ret
+
+
+
+	.p2align 4
 	.globl	dc_montgomery_cached
 	.type	dc_montgomery_cached, @function
 # void dc_montgomery_cached (uint64_t n (rdi), uint64_t *x (rsi))
