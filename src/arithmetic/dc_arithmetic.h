@@ -34,10 +34,8 @@ uint64_t dc_radd_mod (uint64_t a, uint64_t b, uint64_t m);
 
 
 /* arithmetic/montgomery */
-uint64_t dc_montgomery_mul_mod (uint64_t a, uint64_t b);
-#ifdef _dc_arch_x86_64
-uint64_t dc_montgomery_dmul_mod (uint64_t *a, uint64_t b);
-#endif
+uint64_t dc_redc_64bit (uint64_t a, uint64_t b);
+uint64_t dc_redc2_64bit (uint64_t *a, uint64_t b);
 void dc_montgomery_cached (uint64_t n, uint64_t *x);
 
 
@@ -62,7 +60,7 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m);
 uint64_t dc_gcd (uint64_t u, uint64_t v);
 uint64_t dc_ext_gcd (uint64_t u, uint64_t v, int64_t* s, int64_t* t);
 uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t);
-void dc_montgomery_gcd (uint64_t v, int64_t *s, int64_t *t);
+void dc_montgomery_gcd (uint64_t v, uint64_t *s, uint64_t *t);
 
 
 /* arithmetic/alloc */

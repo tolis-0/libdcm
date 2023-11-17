@@ -93,16 +93,11 @@ uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t m)
 	base = dc_mul_mod(base, x, m);
 
 	for (; exp > 0; exp >>= 1) {
-#ifdef _dc_arch_x86_64
-		if (exp & 1) base = dc_montgomery_dmul_mod(&x, base);
-		else base = dc_montgomery_mul_mod(base, base);
-#else
-		if (exp & 1) x = dc_montgomery_mul_mod(x, base);
-		base = dc_montgomery_mul_mod(base, base);
-#endif
+		if (exp & 1) base = dc_redc2_64bit(&x, base);
+		else base = dc_redc_64bit(base, base);
 	}
 
-	x = dc_montgomery_mul_mod(x, 1);
+	x = dc_redc_64bit(x, 1);
 
 	return x;
 }

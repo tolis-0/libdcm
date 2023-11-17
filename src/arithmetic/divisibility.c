@@ -176,8 +176,8 @@ uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t)
 }
 
 
-/* finds s and t such that 1 = s*2^64 - t*n where n is odd */
-void dc_montgomery_gcd (uint64_t v, int64_t *s, int64_t *t)
+/* finds s and t such that 1 = s*2^64 - t*v where v is odd */
+void dc_montgomery_gcd (uint64_t v, uint64_t *s, uint64_t *t)
 {
 	uint64_t s0, t0, mask;
 	const uint64_t Ugh = 0x8000000000000000; // 2^63

@@ -9,10 +9,10 @@
 
 
 	.p2align 4
-	.globl	dc_montgomery_mul_mod
-	.type	dc_montgomery_mul_mod, @function
-# uint64_t dc_montgomery_mul_mod (uint64_t a (rdi), uint64_t b (rsi))
-dc_montgomery_mul_mod:
+	.globl	dc_redc_64bit
+	.type	dc_redc_64bit, @function
+# uint64_t dc_redc_64bit (uint64_t a (rdi), uint64_t b (rsi))
+dc_redc_64bit:
 
 	movq	%rdi, %rax
 	mulq	%rsi		# t (rdx:rax) = a (rax) * b (rsi)
@@ -35,44 +35,44 @@ dc_montgomery_mul_mod:
 
 
 	.p2align 4
-	.globl	dc_montgomery_dmul_mod
-	.type	dc_montgomery_dmul_mod, @function
-# uint64_t dc_montgomery_dmul_mod (uint64_t *a (rdi), uint64_t b (rsi))
-dc_montgomery_dmul_mod:
+	.globl	dc_redc2_64bit
+	.type	dc_redc2_64bit, @function
+# uint64_t dc_redc2_64bit (uint64_t *a (rdi), uint64_t b (rsi))
+dc_redc2_64bit:
 
 	movq	0(%rdi), %rax
-	mulq	%rsi		# t (rdx:rax) = a (rax) * b (rsi)
+	mulq	%rsi
 	movq	%rsi, %rcx	# (rcx) holds copy of b
 	movq	%rdi, %r8	# (r8) holds copy of address for a
 	movq	_un_i(%rip), %r9
 	movq	cached_n(%rip), %r10
 	movq	%rax, %rsi
-	movq	%rdx, %rdi	# t (rdi:rsi) copy
-	imulq	%r9,  %rax	# m (rax) = m (rax) * _un_i (r9)
-	mulq	%r10		# m (rdx:rax) = m (rax) * cached_n (r10)
+	movq	%rdx, %rdi
+	imulq	%r9,  %rax
+	mulq	%r10
 	xorq	%r11, %r11
 	addq	%rsi, %rax
-	adcx	%rdi, %rdx	# rem128 (CF:rdx:rax) = t (rdi:rsi) + m (rdx:rax)
+	adcx	%rdi, %rdx
 	cmovcq	%r10, %r11
 	cmpq	%r10, %rdx
 	cmovaeq	%r10, %r11
-	subq	%r11, %rdx	# (u >= n) ? u - n : u
-	movq	%rdx, (%r8)	# stores back a
+	subq	%r11, %rdx
+	movq	%rdx, (%r8)	# store a instead of returning
 
 	movq	%rcx, %rax
-	mulq	%rcx		# t (rdx:rax) = a (rax) * b (rcx)
+	mulq	%rcx
 	movq	%rax, %rsi
-	movq	%rdx, %rdi	# t (rdi:rsi) copy
-	imulq	%r9,  %rax	# m (rax) = m (rax) * _un_i (r9)
-	mulq	%r10		# m (rdx:rax) = m (rax) * cached_n (r10)
+	movq	%rdx, %rdi
+	imulq	%r9,  %rax
+	mulq	%r10
 	xorq	%r11, %r11
 	addq	%rsi, %rax
-	adcx	%rdi, %rdx	# rem128 (CF:rdx:rax) = t (rdi:rsi) + m (rdx:rax)
+	adcx	%rdi, %rdx
 	cmovcq	%r10, %r11
 	movq	%rdx, %rax
 	cmpq	%r10, %rdx
 	cmovaeq	%r10, %r11
-	subq	%r11, %rax	# (u >= n) ? u - n : u
+	subq	%r11, %rax
 	retq
 
 

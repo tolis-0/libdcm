@@ -107,31 +107,31 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 		if (method[i]) {
 			tmp = dc_radd_mod(f_n0, f_n0, m);
 			tmp = dc_radd_mod(tmp, f_n1, m);
-			tmp = dc_montgomery_mul_mod(tmp, f_n1);
-			tmp2 = dc_montgomery_mul_mod(f_n0, f_n0);
-			f_n0 = dc_montgomery_mul_mod(f_n1, f_n1);
+			tmp = dc_redc_64bit(tmp, f_n1);
+			tmp2 = dc_redc_64bit(f_n0, f_n0);
+			f_n0 = dc_redc_64bit(f_n1, f_n1);
 			f_n0 = dc_radd_mod(f_n0, tmp2, m);
 			f_n1 = tmp;
 		} else {
 			tmp = dc_radd_mod(f_n1, f_n1, m);
 			tmp = dc_radd_mod(tmp, m - f_n0, m);
-			tmp = dc_montgomery_mul_mod(tmp, f_n0);
-			tmp2 = dc_montgomery_mul_mod(f_n0, f_n0);
-			f_n1 = dc_montgomery_mul_mod(f_n1, f_n1);
+			tmp = dc_redc_64bit(tmp, f_n0);
+			tmp2 = dc_redc_64bit(f_n0, f_n0);
+			f_n1 = dc_redc_64bit(f_n1, f_n1);
 			f_n1 = dc_radd_mod(f_n1, tmp2, m);
 			f_n0 = tmp;
 		}
 	}
 
 	if (n & 1) {
-		f_n1 = dc_montgomery_mul_mod(f_n1, f_n1);
-		f_n0 = dc_montgomery_mul_mod(f_n0, f_n0);
+		f_n1 = dc_redc_64bit(f_n1, f_n1);
+		f_n0 = dc_redc_64bit(f_n0, f_n0);
 		f_n0 = dc_radd_mod(f_n0, f_n1, m);
 	} else {
 		tmp = dc_radd_mod(f_n1, f_n1, m);
 		tmp = dc_radd_mod(tmp, m - f_n0, m);
-		f_n0 = dc_montgomery_mul_mod(tmp, f_n0);
+		f_n0 = dc_redc_64bit(tmp, f_n0);
 	}
 
-	return dc_montgomery_mul_mod(f_n0, 1);
+	return dc_redc_64bit(f_n0, 1);
 }

@@ -226,26 +226,26 @@ int dc_lucas_p1 (uint64_t n, uint64_t Q)
 
 		for (; bit; bit >>= 1) {
 			if (n & bit) {
-				Utmp1 = dc_montgomery_mul_mod(U1, U1);
-				Utmp2 = dc_montgomery_mul_mod(U0, Q);
-				U1 = dc_montgomery_mul_mod(const_2, U1);
-				U1 = dc_montgomery_mul_mod(Utmp2, U1);
+				Utmp1 = dc_redc_64bit(U1, U1);
+				Utmp2 = dc_redc_64bit(U0, Q);
+				U1 = dc_redc_64bit(const_2, U1);
+				U1 = dc_redc_64bit(Utmp2, U1);
 				U1 = dc_radd_mod(U1, Utmp1, n);
-				U0 = dc_montgomery_mul_mod(Utmp2, U0);
+				U0 = dc_redc_64bit(Utmp2, U0);
 				U0 = dc_radd_mod(U0, Utmp1, n);
 			} else {
-				Utmp1 = dc_montgomery_mul_mod(U0, U0);
-				Utmp2 = dc_montgomery_mul_mod(U1, U0);
-				U0 = dc_montgomery_mul_mod(Utmp2, const_2);
+				Utmp1 = dc_redc_64bit(U0, U0);
+				Utmp2 = dc_redc_64bit(U1, U0);
+				U0 = dc_redc_64bit(Utmp2, const_2);
 				U0 = dc_radd_mod(U0, n - Utmp1, n);
-				U1 = dc_montgomery_mul_mod(U1, U1);
+				U1 = dc_redc_64bit(U1, U1);
 				Utmp2 = U1;
-				U1 = dc_montgomery_mul_mod(Utmp1, Q);
+				U1 = dc_redc_64bit(Utmp1, Q);
 				U1 = dc_radd_mod(U1, Utmp2, n);
 			}
 		}
 
-		U1 = dc_montgomery_mul_mod(U1, 1ULL);
+		U1 = dc_redc_64bit(U1, 1ULL);
 	}
 
 	return (U1 == 0);
