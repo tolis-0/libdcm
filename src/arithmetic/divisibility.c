@@ -2,30 +2,31 @@
 #include "dc_arithmetic.h"
 
 
-uint64_t dc_gcd (uint64_t a, uint64_t b)
+uint64_t dc_gcd (uint64_t u, uint64_t v)
 {
-	uint8_t shift, a_lz, b_lz;
+	unsigned shift, u_lz, v_lz;
 	uint64_t tmp;
 
-	if (a == 0) return b;
-	if (b == 0) return a;
+	if (u == 0) return v;
+	if (v == 0) return u;
 
-	a_lz = __builtin_ctzll(a);
-	b_lz = __builtin_ctzll(b);
+	u_lz = __builtin_ctzll(u);
+	v_lz = __builtin_ctzll(v);
 
-	shift = (a_lz < b_lz) ? a_lz : b_lz;
-	b >>= b_lz;
+	shift = (u_lz < v_lz) ? u_lz : v_lz;
+	v >>= v_lz;
 
-	while (a != 0) {
-		a >>= a_lz;
-		a_lz = __builtin_ctzll(b - a);
-		tmp = (a > b) ? a - b : b - a;
-		b = (a > b) ? b : a;
-		a = tmp;
+	while (u != 0) {
+		u >>= u_lz;
+		u_lz = __builtin_ctzll(v - u);
+		tmp = (u > v) ? u - v : v - u;
+		v = (u > v) ? v : u;
+		u = tmp;
 	}
 
-	return b << shift;
+	return v << shift;
 }
+
 
 
 uint64_t _dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
@@ -56,86 +57,145 @@ uint64_t _dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
 }
 
 
-uint64_t dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
+uint64_t dc_ext_gcd (uint64_t u, uint64_t v, int64_t* s, int64_t* t)
 {
-	if (a == 0) {
+	if (u == 0) {
 		s[0] = 0;
-		if (b == 0) t[0] = 0;
+		if (v == 0) t[0] = 0;
 		else t[0] = 1;
-		return b;
+		return v;
 	}
 
-	if (b == 0) {
-		s[0] = 1, t[0] = 0;
-		return a;
+	if (v == 0) {
+		s[0] = 1;
+		t[0] = 0;
+		return u;
 	}
 
-	if (a > b) return _dc_ext_gcd(a, b, t, s);
-	else return _dc_ext_gcd(b, a, s, t);
+	if (u > v) return _dc_ext_gcd(u, v, t, s);
+	else return _dc_ext_gcd(v, u, s, t);
 }
 
 
-uint64_t dc_binary_ext_gcd (uint64_t a, uint64_t b, int64_t *s, int64_t *t)
+/* Binary Extended GCD from GMP implementation */
+uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t)
 {
-	uint64_t u, v, g = 1;
-	int64_t A, B, C, D;
+	uint64_t s0, t0, s1, t1, Ug, Vg, Ugh, Vgh;
+	unsigned i, zero_bits, shift, count;
 
-	if (a == 0) {
+	if (u == 0) {
 		s[0] = 0;
-		if (b == 0) t[0] = 0;
+		if (v == 0) t[0] = 0;
 		else t[0] = 1;
-		return b;
+		return v;
 	}
 
-	if (b == 0) {
+	if (v == 0) {
 		s[0] = 1, t[0] = 0;
-		return a;
+		return u;
 	}
 
-	while ((a & 1) == 0 && (b & 1) == 0) {
-		a >>= 1;
-		b >>= 1;
-		g <<= 1;
+	/* 	Maintain
+
+		U = t1 u + t0 v
+		V = s1 u + s0 v
+
+		where U, V are the inputs (without any shared power of two),
+		and the matrix has determinant ± 2^{shift}.
+	*/
+
+	s0 = 1, t0 = 0, s1 = 0, t1 = 1;
+
+	zero_bits = __builtin_ctzll(u | v);
+
+	u >>= zero_bits;
+	v >>= zero_bits;
+
+	if ((u & 1) == 0) {
+		shift = __builtin_ctzll(u);
+
+		u >>= shift;
+		t1 <<= shift;
+	} else if ((v & 1) == 0) {
+		shift = __builtin_ctzll(v);
+
+		v >>= shift;
+		s0 <<= shift;
+	} else {
+		shift = 0;
 	}
 
-	u = a, v = b;
-	A = 1, B = 0, C = 0, D = 1;
-
-	while (u != 0) {
-		while ((u & 1) == 0) {
-			u >>= 1;
-			if ((A & 1) == 0 && (B & 1) == 0) {
-				A >>= 1;
-				B >>= 1;
-			} else {
-				A = (A + (int64_t) b) / 2;
-				B = (B - (int64_t) a) / 2;
-			}
-		}
-
-		while ((v & 1) == 0) {
-			v >>= 1;
-			if ((C & 1) == 0 && (D & 1) == 0) {
-				C >>= 1;
-				D >>= 1;
-			} else {
-				C = (C + (int64_t) b) / 2;
-				D = (D - (int64_t) a) / 2;
-			}
-		}
-
-		if (u >= v) {
+	while (u != v) {
+		if (u > v) {
 			u -= v;
-			A -= C;
-			B -= D;
-		} else {
+
+			count = __builtin_ctzll(u);
+			u >>= count;
+
+			t0 += t1; t1 <<= count;
+			s0 += s1; s1 <<= count;
+		}  else {
 			v -= u;
-			C -= A;
-			D -= B;
+
+			count = __builtin_ctzll(v);
+			v >>= count;
+
+			t1 += t0; t0 <<= count;
+			s1 += s0; s0 <<= count;
 		}
+		shift += count;
 	}
 
-	s[0] = C;
-	t[0] = D;
-	return g * v;
+	/* 	Now u = v = g = gcd (u,v). Compute U/g and V/g */
+	Ug = t0 + t1;
+	Vg = s0 + s1;
+
+	Ugh = Ug/2 + (Ug & 1);
+	Vgh = Vg/2 + (Vg & 1);
+
+	/* 	Now 2^{shift} g = s0 U - t0 V. Get rid of the power of two, using
+		s0 U - t0 V = (s0 + V/g) U - (t0 + U/g) V. */
+	for (i = 0; i < shift; i++) {
+		uint64_t mask = -((s0 | t0) & 1);
+
+		s0 /= 2;
+		t0 /= 2;
+		s0 += mask & Vgh;
+		t0 += mask & Ugh;
+	}
+
+	if (s0 > Vg - s0) {
+		s0 -= Vg;
+		t0 -= Ug;
+	}
+
+	s[0] = s0;
+	t[0] = -t0;
+
+	return v << zero_bits;
+}
+
+
+/* finds s and t such that 1 = s*2^64 - t*n where n is odd */
+void dc_montgomery_gcd (uint64_t v, int64_t *s, int64_t *t)
+{
+	uint64_t s0, t0, mask;
+	const uint64_t Ugh = 0x8000000000000000; // 2^63
+	const uint64_t Vgh = v/2 + 1;
+	unsigned i;
+
+	s0 = 1;
+	t0 = 0;
+
+	for (i = 0; i < 64; i++) {
+		mask = -(s0 & 1);
+
+		s0 >>= 1;
+		t0 >>= 1;
+		s0 += mask & Vgh;
+		t0 += mask & Ugh;
+	}
+
+	s[0] = s0;
+	t[0] = t0;
 }

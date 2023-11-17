@@ -1,3 +1,5 @@
+# This algorithm uses r = 2^64 such that division and modulo with r
+# is choosing rdx or rax register respectively
 	.local	_un_i
 	.comm	_un_i, 8, 8
 	.local	cached_n
@@ -18,13 +20,12 @@ dc_montgomery_mul_mod:
 	movq	cached_n(%rip), %r10
 	movq	%rax, %rsi
 	movq	%rdx, %rdi	# t (rdi:rsi) copy
-	# _rbit = 64
-	mulq	%r9			# m (rdx:rax) = m (rax) * _un_i (r9)
-	mulq	%r10		# m (rdx:rax) = m (rax) * cached_n (r10)
+	imulq	%r9,  %rax	# m (rax) = t (rax) * n' (r9) (mod 2^64)
+	mulq	%r10		# m*n (rdx:rax) = m (rax) * n (r10)
 	xorq	%r11, %r11
-	addq	%rsi, %rax
-	adcx	%rdi, %rdx	# rem128 (CF:rdx:rax) = t (rdi:rsi) + m (rdx:rax)
-	movq	%rdx, %rax
+	addq	%rax, %rsi
+	adcx	%rdi, %rdx	# t+m*n (CF:rdx:rax) = t (rdi:rsi) + m*n (rdx:rax)
+	movq	%rdx, %rax	# u (CF:rax) = (t+m*n)/2^64
 	cmovcq	%r10, %r11
 	cmpq	%r10, %rdx
 	cmovaeq	%r10, %r11
@@ -47,33 +48,32 @@ dc_montgomery_dmul_mod:
 	movq	cached_n(%rip), %r10
 	movq	%rax, %rsi
 	movq	%rdx, %rdi	# t (rdi:rsi) copy
-	mulq	%r9			# m (rdx:rax) = m (rax) * _un_i (r9)
+	imulq	%r9,  %rax	# m (rax) = m (rax) * _un_i (r9)
 	mulq	%r10		# m (rdx:rax) = m (rax) * cached_n (r10)
 	xorq	%r11, %r11
 	addq	%rsi, %rax
 	adcx	%rdi, %rdx	# rem128 (CF:rdx:rax) = t (rdi:rsi) + m (rdx:rax)
-	movq	%rdx, %rax
 	cmovcq	%r10, %r11
 	cmpq	%r10, %rdx
 	cmovaeq	%r10, %r11
-	subq	%r11, %rax	# (u >= n) ? u - n : u
-	movq	%rax, (%r8)	# stores back a
+	subq	%r11, %rdx	# (u >= n) ? u - n : u
+	movq	%rdx, (%r8)	# stores back a
 
 	movq	%rcx, %rax
 	mulq	%rcx		# t (rdx:rax) = a (rax) * b (rcx)
 	movq	%rax, %rsi
 	movq	%rdx, %rdi	# t (rdi:rsi) copy
-	mulq	%r9			# m (rdx:rax) = m (rax) * _un_i (r9)
+	imulq	%r9,  %rax	# m (rax) = m (rax) * _un_i (r9)
 	mulq	%r10		# m (rdx:rax) = m (rax) * cached_n (r10)
 	xorq	%r11, %r11
 	addq	%rsi, %rax
 	adcx	%rdi, %rdx	# rem128 (CF:rdx:rax) = t (rdi:rsi) + m (rdx:rax)
-	movq	%rdx, %rax
 	cmovcq	%r10, %r11
+	movq	%rdx, %rax
 	cmpq	%r10, %rdx
 	cmovaeq	%r10, %r11
 	subq	%r11, %rax	# (u >= n) ? u - n : u
-	ret
+	retq
 
 
 
@@ -88,28 +88,23 @@ dc_montgomery_cached:
 
 	subq	$16, %rsp
 	movq	%rdi, cached_n(%rip)	# cached_n = n;
-	xorq	%rdx, %rdx
-	movq	%rdi, %rax
-	negq	%rax
-	movq	%rax, %r9
-	divq	%rdi					# n (rdi), x (rsi), r-n (rax)
+	movq	$1, %rdx
+	xorq	%rax, %rax				# r (rdx:rax) = 2^64
+	divq	%rdi					# x (rdx) = r (mod n)
 	movq	%rdx, r_mod_n(%rip)
 	movq	%rdx, (%rsi)
-	movq	%r9, %rsi
-	leaq	0(%rsp), %rdx
-	leaq	8(%rsp), %rcx
-	# dc_ext_gcd(n (rdi), r-n (rsi), &n_i (rdx), &tmp (rcx));
-	call	dc_ext_gcd@PLT
-	movq	8(%rsp), %rcx			# tmp (rcx)
-	movq	0(%rsp), %rdx			# n_i (rdx)
-	subq	%rdx, %rcx
-	movq	%rcx, _un_i(%rip)
+	leaq	0(%rsp), %rsi
+	leaq	8(%rsp), %rdx
+	# dc_montgomery_gcd (n (rdi), &s (rsi), &t (rdx))
+	call	dc_montgomery_gcd@PLT
+	movq	8(%rsp), %rax			# n' (rax), r' * 2^64 - n' * n = 1
+	movq	%rax, _un_i(%rip)
 	addq	$16, %rsp
-	ret
+	retq
 
 .Lcached_ret:
 
 	# montgomery_cached_return		n (rdi), x (rsi)
 	movq	r_mod_n(%rip), %rax
 	movq	%rax, (%rsi)
-	ret
+	retq

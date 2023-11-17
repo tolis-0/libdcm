@@ -59,9 +59,10 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m);
 		else m = a % b, d = a / b; \
 	} while (0)
 
-uint64_t dc_gcd (uint64_t m, uint64_t n);
-uint64_t dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t);
-
+uint64_t dc_gcd (uint64_t u, uint64_t v);
+uint64_t dc_ext_gcd (uint64_t u, uint64_t v, int64_t* s, int64_t* t);
+uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t);
+void dc_montgomery_gcd (uint64_t v, int64_t *s, int64_t *t);
 
 
 /* arithmetic/alloc */
