@@ -54,10 +54,8 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 	f_n0 = (dc_fib_ar[k] > m) ? (dc_fib_ar[k] % m) : dc_fib_ar[k];
 	f_n1 = (dc_fib_ar[k+1] > m) ? (dc_fib_ar[k+1] % m) : dc_fib_ar[k+1];
 
-	if ((m & 1) && n > 0x10000) {
-		if (m >= 0x100000000) goto fib_montgomery_64bit;
-		else goto fib_montgomery_32bit;
-	}
+	if ((m & 1) && n > 0x10000)
+		goto fib_montgomery_64bit;
 
 	if (m < 0x80000000) {
 		for (i--; i >= 0; i--) {
@@ -102,54 +100,6 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 	}
 
 	return f_n0;
-
-
-fib_montgomery_32bit:
-
-	uint32_t m_i32;
-
-	m_i32 = dc_montgomery(32, m, &tmp);
-	f_n0 = (f_n0 * tmp) % m;
-	f_n1 = (f_n1 * tmp) % m;
-
-	for (i--; i >= 0; i--) {
-		if (method[i]) {
-			tmp = (f_n0 << 1) + f_n1;
-			tmp = (tmp > m) ? tmp - m : tmp;
-			tmp = (tmp > m) ? tmp - m : tmp;
-			tmp = dc_mul_redc_32(tmp, f_n1, m, m_i32);
-			tmp2 = dc_mul_redc_32(f_n0, f_n0, m, m_i32);
-			f_n0 = dc_mul_redc_32(f_n1, f_n1, m, m_i32);
-			f_n0 += tmp2;
-			f_n0 = (f_n0 > m) ? f_n0 - m : f_n0;
-			f_n1 = tmp;
-		} else {
-			tmp = (f_n1 << 1) + (m - f_n0);
-			tmp = (tmp > m) ? tmp - m : tmp;
-			tmp = (tmp > m) ? tmp - m : tmp;
-			tmp = dc_mul_redc_32(tmp, f_n0, m, m_i32);
-			tmp2 = dc_mul_redc_32(f_n0, f_n0, m, m_i32);
-			f_n1 = dc_mul_redc_32(f_n1, f_n1, m, m_i32);
-			f_n1 += tmp2;
-			f_n1 = (f_n1 > m) ? f_n1 - m : f_n1;
-			f_n0 = tmp;
-		}
-	}
-
-	if (n & 1) {
-		f_n1 = dc_mul_redc_32(f_n1, f_n1, m, m_i32);
-		f_n0 = dc_mul_redc_32(f_n0, f_n0, m, m_i32);
-		f_n0 += f_n1;
-		f_n0 = (f_n0 > m) ? f_n0 - m : f_n0;
-	} else {
-		tmp = (f_n1 << 1) + (m - f_n0);
-		tmp = (tmp > m) ? tmp - m : tmp;
-		tmp = (tmp > m) ? tmp - m : tmp;
-		f_n0 = dc_mul_redc_32(tmp, f_n0, m, m_i32);
-	}
-
-	return dc_mul_redc_32(f_n0, 1ULL, m, m_i32);
-
 
 fib_montgomery_64bit:
 
