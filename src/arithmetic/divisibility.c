@@ -2,6 +2,7 @@
 #include "dc_arithmetic.h"
 
 
+/*	Binary GCD */
 uint64_t dc_gcd (uint64_t u, uint64_t v)
 {
 	unsigned shift, u_lz, v_lz;
@@ -29,6 +30,8 @@ uint64_t dc_gcd (uint64_t u, uint64_t v)
 
 
 
+/*	The faster extended Euclidean algorithm 
+	By Anton Iliev, Nikolay Kyurkchiev */
 uint64_t _dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
 {
 	uint64_t a2, a3, c0, c1, g;
@@ -57,6 +60,8 @@ uint64_t _dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
 }
 
 
+
+/*	Extended GCD: u*s + t*v = gcd(u,v)  */
 uint64_t dc_ext_gcd (uint64_t u, uint64_t v, int64_t* s, int64_t* t)
 {
 	if (u == 0) {
@@ -77,7 +82,8 @@ uint64_t dc_ext_gcd (uint64_t u, uint64_t v, int64_t* s, int64_t* t)
 }
 
 
-/* Binary Extended GCD from GMP implementation */
+
+/*	Binary Extended GCD from GMP implementation */
 uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t)
 {
 	uint64_t s0, t0, s1, t1, Ug, Vg, Ugh, Vgh;
@@ -91,7 +97,8 @@ uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t)
 	}
 
 	if (v == 0) {
-		s[0] = 1, t[0] = 0;
+		s[0] = 1;
+		t[0] = 0;
 		return u;
 	}
 
@@ -153,13 +160,14 @@ uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t)
 	Ugh = Ug/2 + (Ug & 1);
 	Vgh = Vg/2 + (Vg & 1);
 
-	/* 	Now 2^{shift} g = s0 U - t0 V. Get rid of the power of two, using
-		s0 U - t0 V = (s0 + V/g) U - (t0 + U/g) V. */
+	/*	Now (2^shift)*g = s0*U - t0*V.
+		Get rid of the power of two, using
+		s0*U - t0*V = (s0 + V/g)*U - (t0 + U/g)*V. */
 	for (i = 0; i < shift; i++) {
 		uint64_t mask = -((s0 | t0) & 1);
 
-		s0 /= 2;
-		t0 /= 2;
+		s0 >>= 1;
+		t0 >>= 1;
 		s0 += mask & Vgh;
 		t0 += mask & Ugh;
 	}
@@ -177,8 +185,9 @@ uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t)
 
 
 
-/* finds t such that 1 = s*2^r - t*v where v < 2^r is odd */
-void dc_2powr_gcd (unsigned r, uint64_t v, uint64_t *t)
+/*	Find s and t such that 1 = s*(2^r) - t*v
+	where 0 < r <= 64 and v is odd */
+void dc_2powr_gcd (unsigned r, uint64_t v, uint64_t *s, uint64_t *t)
 {
 	uint64_t s0, t0, mask;
 	const uint64_t Ugh = 1ULL << (r - 1); // 2^(r-1)
@@ -188,6 +197,8 @@ void dc_2powr_gcd (unsigned r, uint64_t v, uint64_t *t)
 	s0 = 1;
 	t0 = 0;
 
+	/* 	if s0 is odd rewrite the equation as
+		2^k = s*2^r - t*n = (s + n)2^r - (t + 2^r)n */
 	for (i = 0; i < r; i++) {
 		mask = -(s0 & 1);
 
@@ -197,5 +208,6 @@ void dc_2powr_gcd (unsigned r, uint64_t v, uint64_t *t)
 		t0 += mask & Ugh;
 	}
 
+	s[0] = s0;
 	t[0] = t0;
 }
