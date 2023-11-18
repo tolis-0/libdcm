@@ -209,7 +209,7 @@ int dc_lucas_p1 (uint64_t n, uint64_t Q)
 			}
 		}
 	} else {
-		dc_montgomery_cached(n, &U1);
+		dc_montgomery_64bit(n, &U1);
 
 		if (n < 0x8000000000000000) {
 			const_2 = 2ULL * U1;

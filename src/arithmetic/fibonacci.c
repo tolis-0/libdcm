@@ -99,7 +99,7 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 		return f_n0;
 	}
 
-	dc_montgomery_cached(m, &tmp);
+	dc_montgomery_64bit(m, &tmp);
 	f_n0 = dc_mul_mod(f_n0, tmp, m);
 	f_n1 = dc_mul_mod(f_n1, tmp, m);
 
@@ -133,5 +133,5 @@ uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 		f_n0 = dc_redc_64bit(tmp, f_n0);
 	}
 
-	return dc_redc_64bit(f_n0, 1);
+	return dc_redc_64bit(f_n0, 1ULL);
 }

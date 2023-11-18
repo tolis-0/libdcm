@@ -1,76 +1,88 @@
 #include <stdint.h>
 #include "dc_arithmetic.h"
 
-
-static
-#ifdef _DC_THREADS
-	__thread
-#endif
-	uint64_t cached_n = 0, _un_i, r_mod_n;
-
-
-#define _dc_redc_helper(a, b) \
-	t = (unsigned __int128) a * b; \
-\
-	m = t & 0xFFFFFFFFFFFFFFFF; \
-	m *= _un_i; \
-	high_t = (uint64_t) (t >> 64); \
-	low_t = (uint64_t) t; \
-\
-	m &= 0xFFFFFFFFFFFFFFFF; \
-	m *= cached_n; \
-	high_m = (uint64_t) (m >> 64); \
-	low_m = (uint64_t) m; \
-\
-	high_t += __builtin_add_overflow(low_t, low_m, &rem); \
-	carry = __builtin_add_overflow(high_t, high_m, &rem); \
-\
-	sub = (carry) ? cached_n : 0; \
-	sub = (rem >= cached_n) ? cached_n : sub;
-
+static unsigned _k;
+static uint64_t _n = 0, _n_inv, r_mod_n;
 
 
 uint64_t dc_redc_64bit (uint64_t a, uint64_t b)
 {
-	unsigned __int128 t, m;
-	uint64_t rem, sub, high_t, high_m, low_t, low_m;
+	unsigned __int128 t, m, mn;
+	uint64_t u, sub, high_t, high_mn, low_t, low_mn;
 	int carry;
 
-	_dc_redc_helper(a, b);
+	t = (unsigned __int128) a * b;
 
-	return rem - sub;
+	/*	m = (t mod r) * n',		r = 2^64 */
+	m = t & 0xFFFFFFFFFFFFFFFF;
+	m *= _n_inv;
+	high_t = (uint64_t) (t >> 64);
+	low_t = (uint64_t) t;
+
+	/*	m*n = (m mod r) * n */
+	m &= 0xFFFFFFFFFFFFFFFF;
+	mn = m * _n;
+	high_mn = (uint64_t) (mn >> 64);
+	low_mn = (uint64_t) mn;
+
+	/*	u = (t + m*n) / r */
+	high_t += __builtin_add_overflow(low_t, low_mn, &u);
+	carry = __builtin_add_overflow(high_t, high_mn, &u);
+
+	/*	(u >= n) ? (u - n) : u */
+	sub = (carry) ? _n : 0;
+	sub = (u >= _n) ? _n : sub;
+
+	return u - sub;
 }
 
 
-uint64_t dc_redc2_64bit (uint64_t *a, uint64_t b)
+
+uint32_t dc_redc_32bit (uint32_t a, uint32_t b)
 {
-	unsigned __int128 t, m;
-	uint64_t rem, sub, high_t, high_m, low_t, low_m;
-	int carry;
+	uint64_t t, mn, carry, u;
+	uint64_t m;
 
-	_dc_redc_helper(a[0], b);
+	t = (uint64_t) a * (uint64_t) b;
 
-	a[0] = rem - sub;
+	/*	m = (t mod r) * n',		r = 2^32 */
+	m = (uint32_t) t;
+	m *= _n_inv;
 
-	_dc_redc_helper(b, b);
+	/*	m*n = (m mod r) * n */
+	mn = (uint64_t) m * _n;
 
-	return rem - sub;
+	/*	u = (t + m*n) / r */
+	carry = __builtin_add_overflow(t, mn, &u);
+
+	u >>= 32;
+	carry <<= 32;
+	u += carry;
+
+	/*	(u >= n) ? (u - n) : u */
+	return (uint32_t) ((u >= _n) ? u - _n : u);
 }
 
-#undef _dc_redc_helper
 
 
-void dc_montgomery_cached (uint64_t n, uint64_t *x)
+uint64_t dc_montgomery (unsigned k, uint64_t n, uint64_t *x)
 {
-	uint64_t tmp;
+	if (n == _n && k == _k) goto montgomery_cached_ret;
 
-	if (n == cached_n) goto montgomery_cached_return;
+	_n = n;
+	_k = k;
 
-	cached_n = n;
-	r_mod_n = (-n) % n;
+	if (k == 64U) {
+		r_mod_n = (-n) % n;
+	} else {
+		r_mod_n = (1ULL << k) % n;
+	}
 
-	dc_montgomery_gcd(n, &tmp, &_un_i);
+	dc_2powr_gcd(k, n, &_n_inv);
 
-montgomery_cached_return:
+montgomery_cached_ret:
+	
 	x[0] = r_mod_n;
+	return _n_inv;
 }
+
