@@ -30,7 +30,7 @@ uint64_t dc_gcd (uint64_t u, uint64_t v)
 
 
 
-/*	The faster extended Euclidean algorithm 
+/*	The faster extended Euclidean algorithm
 	By Anton Iliev, Nikolay Kyurkchiev */
 uint64_t _dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
 {

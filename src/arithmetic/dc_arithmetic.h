@@ -34,9 +34,10 @@ uint64_t dc_radd_mod (uint64_t a, uint64_t b, uint64_t m);
 
 
 /* arithmetic/montgomery */
-uint64_t dc_redc_64bit (uint64_t a, uint64_t b);
-uint32_t dc_redc_32bit (uint32_t a, uint32_t b);
-uint64_t dc_montgomery (unsigned k, uint64_t n, uint64_t *x);
+uint64_t dc_mul_redc_64 (uint64_t a, uint64_t b, uint64_t N, uint64_t Ninv);
+uint32_t dc_mul_redc_32 (uint32_t a, uint32_t b, uint32_t N, uint32_t Ninv);
+uint64_t dc_mon_expmod (uint64_t base, uint64_t exp, uint64_t m);
+uint64_t dc_montgomery (unsigned k, uint64_t N, uint64_t *x);
 
 
 /* arithmetic/fibonacci */

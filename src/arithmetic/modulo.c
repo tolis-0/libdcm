@@ -20,6 +20,7 @@ uint64_t dc_muladd_mod (uint64_t a, uint64_t b, uint64_t c, uint64_t m)
 }
 
 
+
 /* (a + b) % m */
 uint64_t dc_add_mod (uint64_t a, uint64_t b, uint64_t m)
 {
@@ -46,6 +47,7 @@ uint64_t dc_add_mod (uint64_t a, uint64_t b, uint64_t m)
 }
 
 
+
 /* (a + b) % m, 0 <= a < m, 0 <= b < m */
 uint64_t dc_radd_mod (uint64_t a, uint64_t b, uint64_t m)
 {
@@ -64,61 +66,32 @@ uint64_t dc_radd_mod (uint64_t a, uint64_t b, uint64_t m)
 }
 
 
+
 /* (a ^ b) % m */
 uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t m)
 {
 	uint64_t x;
 
-	if (m <= 0x100000000) {
-		if (m == 1) return 0;
+	if (m == 1) return 0;
+	if (m & 1) return dc_mon_expmod(base, exp, m);
 
-		if ((m & 1) == 0) {
-			for (x = 1, base %= m; exp != 0; exp >>= 1){
-				if (exp & 1) x = (x * base) % m;
-				base = (base * base) % m;
-			}
-
-			return x;
-		}
-
-		dc_montgomery_32bit(m);
-
-		uint32_t b, x_32;
-
-		x_32 = (uint32_t) (0x100000000 % m);
-		b = (uint32_t) (((base % m) * x_32) % m);
-
-		for (; exp > 0; exp >>= 1) {
-			if (exp & 1) x_32 = dc_redc_32bit(x_32, b);
-			b = dc_redc_32bit(b, b);
-		}
-
-		x_32 = dc_redc_32bit(x_32, 1U);
-
-		return (uint64_t) x_32;
-	}
-
-	if ((m & 1) == 0) {
-		for (x = 1, base %= m; exp > 0; exp >>= 1){
-			if (exp & 1) x = dc_mul_mod(x, base, m);
-			base = dc_mul_mod(base, base, m);
+	if (m < 0x100000000) {
+		for (x = 1, base %= m; exp != 0; exp >>= 1){
+			if (exp & 1) x = (x * base) % m;
+			base = (base * base) % m;
 		}
 
 		return x;
 	}
 
-	dc_montgomery_64bit(m, &x);
-	base = dc_mul_mod(base, x, m);
-
-	for (; exp > 0; exp >>= 1) {
-		if (exp & 1) x = dc_redc_64bit(x, base);
-		base = dc_redc_64bit(base, base);
+	for (x = 1, base %= m; exp > 0; exp >>= 1){
+		if (exp & 1) x = dc_mul_mod(x, base, m);
+		base = dc_mul_mod(base, base, m);
 	}
-
-	x = dc_redc_64bit(x, 1ULL);
 
 	return x;
 }
+
 
 
 /* (2 ^ b) % m */
