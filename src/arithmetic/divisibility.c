@@ -185,21 +185,22 @@ uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t)
 
 
 
-/*	Find s and t such that 1 = s*(2^r) - t*v
-	where 0 < r <= 64 and v is odd */
-void dc_2powr_gcd (unsigned r, uint64_t v, uint64_t *s, uint64_t *t)
+/*	Find s and t such that 1 = s*(2^k) - t*v
+	where 0 < k <= 64 and v is odd */
+void dc_2powr_gcd (uint8_t k, uint64_t v, uint64_t *s, uint64_t *t)
 {
 	uint64_t s0, t0, mask;
-	const uint64_t Ugh = 1ULL << (r - 1); // 2^(r-1)
+	const uint64_t Ugh = 1ULL << (k - 1); // 2^(k-1)
 	const uint64_t Vgh = v/2 + 1;
-	unsigned i;
+	uint8_t r;
 
+	//	start with 2^k = (1)*2^k + (0)*n
 	s0 = 1;
 	t0 = 0;
 
-	/* 	if s0 is odd rewrite the equation as
-		2^k = s*2^r - t*n = (s + n)2^r - (t + 2^r)n */
-	for (i = 0; i < r; i++) {
+	/*	if s0 is odd rewrite the equation as
+		2^r = s*2^k - t*n = (s + n)2^k - (t + 2^k)n */
+	for (r = k; r > 0; r--) {
 		mask = -(s0 & 1);
 
 		s0 >>= 1;
@@ -208,6 +209,6 @@ void dc_2powr_gcd (unsigned r, uint64_t v, uint64_t *s, uint64_t *t)
 		t0 += mask & Ugh;
 	}
 
-	s[0] = s0;
-	t[0] = t0;
+	if (s != NULL) s[0] = s0;
+	if (t != NULL) t[0] = t0;
 }

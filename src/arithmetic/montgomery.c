@@ -109,9 +109,9 @@ uint64_t dc_mon_expmod (uint64_t base, uint64_t exp, uint64_t m)
 
 /*	Calculates N' and R (mod N) for Montgomery form
 	R = 2^k, 0 < k <= 64 and N < R and N odd */
-uint64_t dc_montgomery (unsigned k, uint64_t N, uint64_t *x)
+uint64_t dc_montgomery (uint8_t k, uint64_t N, uint64_t *x)
 {
-	static unsigned _k;
+	static uint8_t _k;
 	static uint64_t _N = 0, _Ninv, _R;
 	uint64_t tmp;
 
@@ -121,7 +121,7 @@ uint64_t dc_montgomery (unsigned k, uint64_t N, uint64_t *x)
 	_N = N;
 	_k = k;
 
-	if (k == 64U) {
+	if (k == 64) {
 		_R = (-N) % N;
 	} else {
 		_R = (1ULL << k) % N;
