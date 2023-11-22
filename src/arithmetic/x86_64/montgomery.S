@@ -9,6 +9,52 @@
 
 
 
+# Inputs (Constant):	A, B, N, Ninv
+# Output:	Out
+# Volatile Registers:	rax, rdx, rsi, rdi, r11
+# Invalid Registers for A: rax
+# Invalid Registers for Ninv: rax, rdx, rsi, rdi
+# Invalid Registers for N: rax, rdx, rsi, rdi, r11
+# Invalid Registers for Out: r11
+# A, B and Out don't have to be different registers
+.macro  mul_redc_64 	A, B, N, Ninv, Out
+	movq	\B,   %rax
+	mulq	\A			# T (rdx:rax) = A * B
+	movq	%rax, %rsi
+	movq	%rdx, %rdi	# T (rdi:rsi) copy
+	imulq	\Ninv,%rax	# m (rax) = T (rax) * Ninv (mod R)
+	mulq	\N			# m*N (rdx:rax) = m (rax) * N
+	xorq	%r11, %r11
+	addq	%rax, %rsi
+	adcx	%rdi, %rdx	# T+m*N (CF:rdx:rax) = T (rdi:rsi) + m*N (rdx:rax)
+	movq	%rdx, \Out	# t (CF:Out) = (T+m*N) / R
+	cmovcq	\N, %r11
+	cmpq	\N, %rdx
+	cmovaeq	\N, %r11
+	subq	%r11, \Out	# Out = (t >= N) ? t - N : t
+.endm
+
+
+
+# Inputs (Volatile):	A, Ninv
+# Inputs (Constant):	B, N
+# Output:	A
+# Volatile Registers:	r11 (Don't use for A, Ninv, N)
+.macro  mul_redc_32 	A64, A32, B64, N64, N32, Ninv64, Ninv32
+	imulq	\B64, \A64	# T (rdi) = A * B
+	xorl	%r11d, %r11d
+	imull	\A32, \Ninv32	# m = T (edi) * N' (ecx) (mod R)
+	imulq	\N64, \Ninv64	# m*N = m (rcx) * N
+	addq	\Ninv64, \A64	# T+m*N (CF:rdi) = T (rdi) + m*N (rcx)
+	rcrq	$1,   \A64
+	shrq	$31,  \A64		# t (rdi) = (T+m*N) / R
+	cmpq	\N64, \A64
+	cmovael	\N32, %r11d
+	subl	%r11d, \A32		# (t >= N) ? t - N : t
+.endm
+
+
+
 	.p2align 4
 	.globl	dc_mul_redc_64
 	.type	dc_mul_redc_64, @function
@@ -16,21 +62,8 @@
 # Montgomery reduction (REDC) of product a*b with R = 2^64
 dc_mul_redc_64:
 
-	movq	%rdi, %rax
 	movq	%rdx, %r10
-	mulq	%rsi		# T (rdx:rax) = a (rax) * b (rsi)
-	movq	%rax, %rsi
-	movq	%rdx, %rdi	# T (rdi:rsi) copy
-	imulq	%rcx, %rax	# m (rax) = T (rax) * N' (r9) (mod R)
-	mulq	%r10		# m*N (rdx:rax) = m (rax) * N (r10)
-	xorq	%r11, %r11
-	addq	%rax, %rsi
-	adcx	%rdi, %rdx	# T+m*N (CF:rdx:rax) = T (rdi:rsi) + m*N (rdx:rax)
-	movq	%rdx, %rax	# t (CF:rax) = (T+m*N) / R
-	cmovcq	%r10, %r11
-	cmpq	%r10, %rdx
-	cmovaeq	%r10, %r11
-	subq	%r11, %rax	# (t >= N) ? t - N : t
+	mul_redc_64 %rdi, %rsi, %r10, %rcx, %rax
 	ret
 
 
@@ -42,17 +75,7 @@ dc_mul_redc_64:
 # Montgomery reduction (REDC) of product a*b with R = 2^32
 dc_mul_redc_32:
 
-	imulq	%rsi, %rdi	# T (rdi) = a (edi) * b (rsi)
-	xorl	%eax, %eax
-	movl	%edx, %esi	# N (esi = edx) copy
-	imull	%edi, %ecx	# m (ecx) = T (edi) * N' (ecx) (mod R)
-	imulq	%rsi, %rcx	# m*N (rcx) = m (rcx) * N (rsi)
-	addq	%rcx, %rdi	# T+m*N (CF:rdi) = T (rdi) + m*N (rcx)
-	rcrq	$1,   %rdi
-	shrq	$31,  %rdi	# t (rdi) = (T+m*N) / R
-	cmpq	%rsi, %rdi
-	cmovael	%esi, %eax
-	subl	%eax, %edi	# (t >= N) ? t - N : t
+	mul_redc_32 %rdi, %edi, %rsi, %rdx, %edx, %rcx, %ecx
 	movl	%edi, %eax
 	ret
 
@@ -121,7 +144,7 @@ dc_monexp_mod:
 	cmpq	%rax, %rdx
 	jae		.Lexpmod64
 
-	# CASE M < 0x100000000
+	# case M < 0x100000000
 	movl	%edx, %esi
 	movb	$32,  %dil
 	leaq	0(%rsp), %rdx
@@ -130,53 +153,25 @@ dc_monexp_mod:
 	movq	%rax, %r9
 	movq	%rbx, %rax
 	mulq	%r8
-	divq	%r9
+	divq	%rbp
 	addq	$8,   %rsp
 	movl	%edx, %ebx
 .Lforloop32:
-	# x (r8/r8d), b (rbx/ebx), e (r12), M (rbp/ebp), M' (r9d)
+	# x (r8/r8d), b (rbx/ebx), e (r12), M (rbp/ebp), M' (r9/r9d)
 	test 	%r12, %r12
 	jz		.Lrevert32	# case e == 0
 	testb	$1, %r12b
 	je		.Leven32	# case e is even
 # inline dc_mul_redc_32
-	imulq	%rbx, %r8	# T (r8) = x (r8) * b (rbx)
-	xorl	%eax, %eax
-	movl	%r9d, %ecx
-	imull	%r8d, %ecx	# m (ecx) = T (r8d) * M' (r9d=ecx) (mod R)
-	imulq	%rbp, %rcx	# m*M (rcx) = m (rcx/ecx) * M (rbp)
-	addq	%rcx, %r8	# T+m*M (CF:r8) = T (r8) + m*M (rcx)
-	rcrq	$1,   %r8
-	shrq	$31,  %r8	# t (r8) = (T+m*M) / R
-	cmpq	%rbp, %r8
-	cmovael	%ebp, %eax
-	subl	%eax, %r8d	# x = (t >= M) ? t - M : t
+	movq	%r9, %rax
+	mul_redc_32 %r8, %r8d, %rbx, %rbp, %ebp, %rax, %eax
 .Leven32:
-	imulq	%rbx, %rbx	# T (rbx) = b (rbx) * b (rbx)
-	xorl	%eax, %eax
-	movl	%r9d, %ecx
-	imull	%ebx, %ecx	# m (ecx) = T (ebx) * M' (r9d=ecx) (mod R)
-	imulq	%rbp, %rcx	# m*M (rcx) = m (rcx/ecx) * M (rbp)
-	addq	%rcx, %rbx	# T+m*M (CF:rbx) = T (rbx) + m*M (rcx)
-	rcrq	$1,   %rbx
-	shrq	$31,  %rbx	# t (rbx) = (T+m*M) / R
-	cmpq	%rbp, %rbx
-	cmovael	%ebp, %eax
-	subl	%eax, %ebx	# b = (t >= M) ? t - M : t
+	movq	%r9, %rax
+	mul_redc_32 %rbx, %ebx, %rbx, %rbp, %ebp, %rax, %eax
 	shrq	$1, %r12	# e >>= 1
 	jmp 	.Lforloop32
 .Lrevert32:
-	imulq	$1, %r8
-	xorl	%eax, %eax
-	movl	%r9d, %ecx
-	imull	%r8d, %ecx
-	imulq	%rbp, %rcx
-	addq	%rcx, %r8
-	rcrq	$1,   %r8
-	shrq	$31,  %r8
-	cmpq	%rbp, %r8
-	cmovael	%ebp, %eax
-	subl	%eax, %r8d
+	mul_redc_32 %r8, %r8d, $1, %rbp, %ebp, %r9, %r9d
 	movl	%r8d, %eax
 	popq	%rbp
 	popq	%r12
@@ -184,7 +179,7 @@ dc_monexp_mod:
 	ret
 
 .Lexpmod64:
-	# CASE M >= 0x100000000
+	# case M >= 0x100000000
 	movq	%rdx, %rsi
 	movb	$64,  %dil
 	leaq	0(%rsp), %rdx
@@ -193,7 +188,7 @@ dc_monexp_mod:
 	movq	%rax, %r9
 	movq	%rbx, %rax
 	mulq	%r8
-	divq	%r9
+	divq	%rbp
 	addq	$8,   %rsp
 	movq	%rdx, %rbx
 .Lforloop64:
@@ -202,53 +197,16 @@ dc_monexp_mod:
 	jz		.Lrevert64	# case e == 0
 	testb	$1, %r12b
 	je		.Leven64	# case e is even
-# inline dc_mul_redc_64
-	movq	%rbx, %rax
-	mulq	%r8			# T (rdx:rax) = x (r8) * b (rbx)
-	movq	%rax, %rsi
-	movq	%rdx, %rdi	# T (rdi:rsi) copy
-	imulq	%r9,  %rax	# m (rax) = T (rax) * M' (r9) (mod R)
-	mulq	%rbp		# m*M (rdx:rax) = m (rax) * M (rbp)
-	xorq	%r11, %r11
-	addq	%rax, %rsi
-	adcx	%rdi, %rdx	# T+m*M (CF:rdx:rax) = T (rdi:rsi) + m*M (rdx:rax)
-	movq	%rdx, %r8	# t (CF:r8) = (T+m*M) / R
-	cmovcq	%rbp, %r11
-	cmpq	%rbp, %rdx
-	cmovaeq	%rbp, %r11
-	subq	%r11, %r8	# x = (t >= M) ? t - M : t
+	# inline dc_mul_redc_64
+	mul_redc_64 %r8, %rbx, %rbp, %r9, %r8
 .Leven64:
-	movq	%rbx, %rax
-	mulq	%rbx		# T (rdx:rax) = b (rbx) * b (rbx)
-	movq	%rax, %rsi
-	movq	%rdx, %rdi	# T (rdi:rsi) copy
-	imulq	%r9, %rax	# m (rax) = T (rax) * M' (r9) (mod R)
-	mulq	%rbp		# m*M (rdx:rax) = m (rax) * M (rbp)
-	xorq	%r11, %r11
-	addq	%rax, %rsi
-	adcx	%rdi, %rdx	# T+m*M (CF:rdx:rax) = T (rdi:rsi) + m*M (rdx:rax)
-	movq	%rdx, %rbx	# t (CF:rbx) = (T+m*M) / R
-	cmovcq	%rbp, %r11
-	cmpq	%rbp, %rdx
-	cmovaeq	%rbp, %r11
-	subq	%r11, %rbx	# x = (t >= M) ? t - M : t
+	# inline dc_mul_redc_64
+	mul_redc_64 %rbx, %rbx, %rbp, %r9, %rbx
 	shrq	$1, %r12	# e >>= 1
 	jmp 	.Lforloop64
 .Lrevert64:
-	movq	$1, %rax
-	mulq	%r8
-	movq	%rax, %rsi
-	movq	%rdx, %rdi
-	imulq	%r9, %rax
-	mulq	%rbp
-	xorq	%r11, %r11
-	addq	%rax, %rsi
-	adcx	%rdi, %rdx
-	movq	%rdx, %rax
-	cmovcq	%rbp, %r11
-	cmpq	%rbp, %rdx
-	cmovaeq	%rbp, %r11
-	subq	%r11, %rax
+	# inline dc_mul_redc_64
+	mul_redc_64 %r8, $1, %rbp, %r9, %rax
 	popq	%rbp
 	popq	%r12
 	popq	%rbx

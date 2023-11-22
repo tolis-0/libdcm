@@ -92,7 +92,7 @@ uint64_t dc_montgomery (uint8_t k, uint64_t N, uint64_t *x)
 	dc_2powr_gcd(k, N, &tmp, &_Ninv);
 
 montgomery_cached_ret:
-	
+
 	x[0] = _R;
 	return _Ninv;
 }
