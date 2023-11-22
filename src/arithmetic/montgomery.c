@@ -4,6 +4,7 @@
 #define MONEXP_USE_32BIT 1
 
 
+
 /*	Montgomery multiplication and reduction for R = 2^64 */
 uint64_t dc_mul_redc_64 (uint64_t a, uint64_t b,
 	uint64_t N, uint64_t Ninv)
@@ -68,8 +69,38 @@ uint32_t dc_mul_redc_32 (uint32_t a, uint32_t b,
 
 
 
+/*	Calculates N' and R (mod N) for Montgomery form
+	R = 2^k, 0 < k <= 64 and N < R and N odd */
+uint64_t dc_montgomery (uint8_t k, uint64_t N, uint64_t *x)
+{
+	static uint8_t _k;
+	static uint64_t _N = 0, _Ninv, _R;
+	uint64_t tmp;
+
+	if (N == _N && k == _k)
+		goto montgomery_cached_ret;
+
+	_N = N;
+	_k = k;
+
+	if (k == 64) {
+		_R = (-N) % N;
+	} else {
+		_R = (1ULL << k) % N;
+	}
+
+	dc_2powr_gcd(k, N, &tmp, &_Ninv);
+
+montgomery_cached_ret:
+	
+	x[0] = _R;
+	return _Ninv;
+}
+
+
+
 /*	Montgomery Modular Exponentiation */
-uint64_t dc_mon_expmod (uint64_t base, uint64_t exp, uint64_t m)
+uint64_t dc_monexp_mod (uint64_t base, uint64_t exp, uint64_t m)
 {
 	uint64_t x, n_inv;
 
@@ -103,34 +134,4 @@ uint64_t dc_mon_expmod (uint64_t base, uint64_t exp, uint64_t m)
 	x = dc_mul_redc_64(x, 1ULL, m, n_inv);
 
 	return x;
-}
-
-
-
-/*	Calculates N' and R (mod N) for Montgomery form
-	R = 2^k, 0 < k <= 64 and N < R and N odd */
-uint64_t dc_montgomery (uint8_t k, uint64_t N, uint64_t *x)
-{
-	static uint8_t _k;
-	static uint64_t _N = 0, _Ninv, _R;
-	uint64_t tmp;
-
-	if (N == _N && k == _k)
-		goto montgomery_cached_ret;
-
-	_N = N;
-	_k = k;
-
-	if (k == 64) {
-		_R = (-N) % N;
-	} else {
-		_R = (1ULL << k) % N;
-	}
-
-	dc_2powr_gcd(k, N, &tmp, &_Ninv);
-
-montgomery_cached_ret:
-	
-	x[0] = _R;
-	return _Ninv;
 }

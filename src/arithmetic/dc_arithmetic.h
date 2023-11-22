@@ -16,6 +16,7 @@ int dc_bpsw (uint64_t n);
 int dc_selfridge_conjecture (uint64_t n);
 
 
+
 /* arithmetic/ntf */
 uint64_t dc_pcf_approx (uint64_t n);
 uint64_t dc_primef_approx (uint64_t n);
@@ -24,20 +25,20 @@ uint64_t dc_sqrt (uint64_t n);
 
 
 /* arithmetic/modulo */
-uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t n);
-uint64_t dc_2exp_mod (uint64_t exp, uint64_t m);
 #define dc_mul_mod(a, b, m) dc_muladd_mod(a, b, 0, m)
 uint64_t dc_muladd_mod (uint64_t a, uint64_t b, uint64_t c, uint64_t m);
 uint64_t dc_add_mod (uint64_t a, uint64_t b, uint64_t m);
 uint64_t dc_radd_mod (uint64_t a, uint64_t b, uint64_t m);
+uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t n);
+uint64_t dc_2exp_mod (uint64_t exp, uint64_t m);
 
 
 
 /* arithmetic/montgomery */
 uint64_t dc_mul_redc_64 (uint64_t a, uint64_t b, uint64_t N, uint64_t Ninv);
 uint32_t dc_mul_redc_32 (uint32_t a, uint32_t b, uint32_t N, uint32_t Ninv);
-uint64_t dc_mon_expmod (uint64_t base, uint64_t exp, uint64_t m);
 uint64_t dc_montgomery (uint8_t k, uint64_t N, uint64_t *x);
+uint64_t dc_monexp_mod (uint64_t base, uint64_t exp, uint64_t m);
 
 
 /* arithmetic/fibonacci */
@@ -61,6 +62,7 @@ uint64_t dc_gcd (uint64_t u, uint64_t v);
 uint64_t dc_ext_gcd (uint64_t u, uint64_t v, int64_t* s, int64_t* t);
 uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t);
 void dc_2powr_gcd (uint8_t k, uint64_t v, uint64_t *s, uint64_t *t);
+
 
 
 /* arithmetic/alloc */

@@ -67,13 +67,13 @@ uint64_t dc_radd_mod (uint64_t a, uint64_t b, uint64_t m)
 
 
 
-/* (a ^ b) % m */
+/* Modular Exponentiation (base ^ exp) % m */
 uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t m)
 {
 	uint64_t x;
 
 	if (m == 1) return 0;
-	if (m & 1) return dc_mon_expmod(base, exp, m);
+	if (m & 1) return dc_monexp_mod(base, exp, m);
 
 	if (m < 0x100000000) {
 		for (x = 1, base %= m; exp != 0; exp >>= 1){
