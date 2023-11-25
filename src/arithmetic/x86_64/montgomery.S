@@ -41,13 +41,13 @@
 # Output:	A
 # Volatile Registers:	r11 (Don't use for A, Ninv, N)
 .macro  mul_redc_32 	A64, A32, B64, N64, N32, Ninv64, Ninv32
-	imulq	\B64, \A64	# T (rdi) = A * B
+	imulq	\B64, \A64		# T = A * B
 	xorl	%r11d, %r11d
-	imull	\A32, \Ninv32	# m = T (edi) * N' (ecx) (mod R)
-	imulq	\N64, \Ninv64	# m*N = m (rcx) * N
-	addq	\Ninv64, \A64	# T+m*N (CF:rdi) = T (rdi) + m*N (rcx)
+	imull	\A32, \Ninv32	# m = T * N' (mod R)
+	imulq	\N64, \Ninv64	# m*N = m * N
+	addq	\Ninv64, \A64	# T+m*N = T + m*N
 	rcrq	$1,   \A64
-	shrq	$31,  \A64		# t (rdi) = (T+m*N) / R
+	shrq	$31,  \A64		# t = (T+m*N) / R
 	cmpq	\N64, \A64
 	cmovael	\N32, %r11d
 	subl	%r11d, \A32		# (t >= N) ? t - N : t
@@ -171,7 +171,10 @@ dc_monexp_mod:
 	shrq	$1, %r12	# e >>= 1
 	jmp 	.Lforloop32
 .Lrevert32:
-	mul_redc_32 %r8, %r8d, $1, %rbp, %ebp, %r9, %r9d
+	imull	%r8d,  %r9d		# m = T=x (r8d) * M' (r9d) (mod R)
+	imulq	%rbp,  %r9		# m*M = m (rbp) * M
+	addq	%r9,   %r8		# T+m*M (r8) = T (r8) + m*M (r9)
+	shrq	$32,   %r8		# t (r8) = (T+m*M) / R
 	movl	%r8d, %eax
 	popq	%rbp
 	popq	%r12
@@ -206,7 +209,13 @@ dc_monexp_mod:
 	jmp 	.Lforloop64
 .Lrevert64:
 	# inline dc_mul_redc_64
-	mul_redc_64 %r8, $1, %rbp, %r9, %rax
+	movq	%r8,  %rax	# T (rax = r8) copy = (x * 1)
+	imulq	%r9,  %rax	# m (rax) = T (rax) * M' (mod R)
+	mulq	%rbp		# m*M (rdx:rax) = m (rax) * M (rbp)
+	xorq	%r11, %r11
+	addq	%r8,  %rax
+	adcx	%r11, %rdx	# T+m*M (rdx) = T (r8) + m*M (rdx:rax)
+	movq	%rdx, %rax	# t (rax) = (T+m*M) / R
 	popq	%rbp
 	popq	%r12
 	popq	%rbx
