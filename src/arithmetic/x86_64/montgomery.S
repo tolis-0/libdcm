@@ -55,6 +55,21 @@
 
 
 
+# Inputs (Constant):	A, B, M
+# Output:	rax
+# Volatile Registers:	All callee-owned
+.macro	mul_mod_64		A, B, M
+	movq	\A, %rax
+	mulq	\B			# rdx:rax = A * B
+	xorl	%ecx, %ecx
+	movq	%rdx, %rsi
+	movq	%rax, %rdi
+	movq	\M, %rdx
+	call	__umodti3@PLT	# (A*B)%M	(rsi:rdi)%(rcx:rdx)
+.endm
+
+
+
 	.p2align 4
 	.globl	dc_mul_redc_64
 	.type	dc_mul_redc_64, @function
@@ -104,7 +119,7 @@ dc_montgomery:
 	movq	%rdx, %r9
 	xorq	%rax, %rax
 	xorq	%rdx, %rdx
-	subq	$16,  %rsp
+	subq	$24,  %rsp
 	xorq	%r8,  %r8
 	movb	%dil, %cl
 	cmpb	$64,  %dil
@@ -121,7 +136,7 @@ dc_montgomery:
 	call	dc_2powr_gcd@PLT
 	movq	0(%rsp), %rax
 	movq	%rax, _Ninv(%rip)
-	addq	$16, %rsp
+	addq	$24, %rsp
 	ret
 
 
@@ -140,22 +155,22 @@ dc_monexp_mod:
 	pushq	%rbp
 	movq	%rdx, %rbp	# M (rbp)
 	movabsq	$4294967296, %rax
-	subq	$8,   %rsp
+	subq	$16,  %rsp
 	cmpq	%rax, %rdx
 	jae		.Lexpmod64
 
 	# case M < 0x100000000
 	movl	%edx, %esi
-	movb	$32,  %dil
+	movb	$32, %dil
 	leaq	0(%rsp), %rdx
 	call	dc_montgomery@PLT
 	movq	0(%rsp), %r8
-	movq	%rax, %r9
-	movq	%rbx, %rax
-	mulq	%r8
-	divq	%rbp
-	addq	$8,   %rsp
-	movl	%edx, %ebx
+	movq	%rax, 8(%rsp)
+	mul_mod_64	%rbx, %r8, %rbp
+	movq	0(%rsp), %r8
+	movq	8(%rsp), %r9
+	addq	$16, %rsp
+	movl	%eax, %ebx
 .Lforloop32:
 	# x (r8/r8d), b (rbx/ebx), e (r12), M (rbp/ebp), M' (r9/r9d)
 	test 	%r12, %r12
@@ -188,12 +203,12 @@ dc_monexp_mod:
 	leaq	0(%rsp), %rdx
 	call	dc_montgomery@PLT
 	movq	0(%rsp), %r8
-	movq	%rax, %r9
-	movq	%rbx, %rax
-	mulq	%r8
-	divq	%rbp
-	addq	$8,   %rsp
-	movq	%rdx, %rbx
+	movq	%rax, 8(%rsp)
+	mul_mod_64	%rbx, %r8, %rbp
+	movq	0(%rsp), %r8
+	movq	8(%rsp), %r9
+	addq	$16,  %rsp
+	movq	%rax, %rbx
 .Lforloop64:
 	# x (r8), b (rbx), e (r12), M (rbp), M' (r9)
 	test 	%r12, %r12

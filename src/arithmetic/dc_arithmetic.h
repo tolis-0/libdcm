@@ -9,7 +9,7 @@
 int dc_prime (uint64_t n);
 int dc_likely_prime (uint64_t n);
 int dc_miller (uint64_t n);
-int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a);
+int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint64_t a);
 int32_t dc_find_jacobi (uint64_t n);
 int dc_lucas_p1 (uint64_t n, uint64_t Q);
 int dc_bpsw (uint64_t n);

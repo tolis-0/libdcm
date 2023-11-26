@@ -114,7 +114,7 @@ int dc_miller (uint64_t n)
 
 /* Implements a Miller-Rabin primality test.
    Returns 1 if n is definitely composite.   */
-int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint32_t a)
+int dc_mr_test (uint64_t n, uint64_t d, uint32_t s, uint64_t a)
 {
 	uint64_t base;
 	uint32_t r;
