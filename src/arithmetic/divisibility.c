@@ -5,25 +5,25 @@
 /*	Binary GCD */
 uint64_t dc_gcd (uint64_t u, uint64_t v)
 {
-	unsigned shift, u_lz, v_lz;
+	unsigned shift, u_tz, v_tz;
 	uint64_t tmp;
 
 	if (u == 0) return v;
 	if (v == 0) return u;
 
-	u_lz = __builtin_ctzll(u);
-	v_lz = __builtin_ctzll(v);
+	u_tz = __builtin_ctzll(u);
+	v_tz = __builtin_ctzll(v);
 
-	shift = (u_lz < v_lz) ? u_lz : v_lz;
-	v >>= v_lz;
+	shift = (u_tz < v_tz) ? u_tz : v_tz;
+	v >>= v_tz;
+	u >>= u_tz;
 
-	while (u != 0) {
-		u >>= u_lz;
-		u_lz = __builtin_ctzll(v - u);
+	do {
 		tmp = (u > v) ? u - v : v - u;
 		v = (u > v) ? v : u;
-		u = tmp;
-	}
+		u_tz = __builtin_ctzll(tmp);
+		u = tmp >> u_tz;
+	} while (u != 0);
 
 	return v << shift;
 }
@@ -31,7 +31,7 @@ uint64_t dc_gcd (uint64_t u, uint64_t v)
 
 
 /*	The faster extended Euclidean algorithm
-	By Anton Iliev, Nikolay Kyurkchiev */
+	in Anton Iliev, Nikolay Kyurkchiev (2018) */
 uint64_t _dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
 {
 	uint64_t a2, a3, c0, c1, g;
@@ -187,7 +187,7 @@ uint64_t dc_binary_ext_gcd (uint64_t u, uint64_t v, int64_t *s, int64_t *t)
 
 /*	Find s and t such that 1 = s*(2^k) - t*v
 	where 0 < k <= 64 and v is odd */
-void dc_2powr_gcd (uint8_t k, uint64_t v, uint64_t *s, uint64_t *t)
+void dc_2powk_gcd (uint8_t k, uint64_t v, uint64_t *s, uint64_t *t)
 {
 	uint64_t s0, t0, mask;
 	const uint64_t Ugh = 1ULL << (k - 1); // 2^(k-1)
@@ -211,4 +211,46 @@ void dc_2powr_gcd (uint8_t k, uint64_t v, uint64_t *s, uint64_t *t)
 
 	if (s != NULL) s[0] = s0;
 	if (t != NULL) t[0] = t0;
+}
+
+
+
+/*	Finds modular multiplicative inverse of n
+	with respect to 2^64 */
+uint64_t dc_modinv_2pow64 (uint64_t n)
+{
+	static const unsigned char precomp_n_inv[8] =
+		{15, 5, 3, 9, 7, 13, 11, 1};
+	uint64_t n_inv;
+
+	//	n*n' + 1 = 0 (mod 2^4)
+	n_inv = precomp_n_inv[(n >> 1) & 7];
+
+	/*	n*n' + 1 = 0 (mod 2^k)
+		(n*n' + 1)^2 = 0 (mod 2^(2k))
+		n*(n'*(n*n' + 2)) + 1 = 0 (mod 2^(2k)) */
+	n_inv *= 2 + n * n_inv;
+	n_inv *= 2 + n * n_inv;
+	n_inv *= 2 + n * n_inv;
+	n_inv *= 2 + n * n_inv;
+
+	return n_inv;
+}
+
+
+
+/*	Finds modular multiplicative inverse of n
+	with respect to 2^32 */
+uint32_t dc_modinv_2pow32 (uint32_t n)
+{
+	static const unsigned char precomp_n_inv[8] =
+		{15, 5, 3, 9, 7, 13, 11, 1};
+	uint32_t n_inv;
+
+	n_inv = precomp_n_inv[(n >> 1) & 7];
+	n_inv *= 2 + n * n_inv;
+	n_inv *= 2 + n * n_inv;
+	n_inv *= 2 + n * n_inv;
+
+	return n_inv;
 }
