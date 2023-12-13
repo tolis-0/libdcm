@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "dc_arithmetic.h"
+#include "dc_montgomery.h"
 
 #define sc_limit 611554136235 ## ULL
 
@@ -68,7 +69,9 @@ int dc_miller (uint64_t n)
 	if (n % 2 == 0) return 0;
 	
 	/* n = (2^s)*d+1 */
-	for (d = n - 1, s = 0; d % 2 == 0; d >>= 1, s++);
+	d = n - 1;
+	s = __builtin_ctzll(d);
+	d >>= s;
 
 	if (n < 9080191) {
 		if (n == 31 || n == 73) return 1;

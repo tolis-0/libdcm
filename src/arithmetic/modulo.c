@@ -1,5 +1,9 @@
 #include <stdint.h>
 #include "dc_arithmetic.h"
+#include "dc_montgomery.h"
+
+#define MONEXP_USE_32BIT 1
+
 
 
 /* (a * b + c) % m */
@@ -88,6 +92,45 @@ uint64_t dc_exp_mod (uint64_t base, uint64_t exp, uint64_t m)
 		if (exp & 1) x = dc_mul_mod(x, base, m);
 		base = dc_mul_mod(base, base, m);
 	}
+
+	return x;
+}
+
+
+
+/*	Montgomery Modular Exponentiation */
+uint64_t dc_monexp_mod (uint64_t base, uint64_t exp, uint64_t m)
+{
+	uint64_t x, n_inv;
+
+#if MONEXP_USE_32BIT == 1
+	if (m < 0x100000000) {
+		uint32_t b, x_32, n_inv;
+
+		n_inv = dc_montgomery(32, m, &x);
+		x_32 = x;
+		b = dc_mul_mod(base, x, m);
+
+		for (; exp > 0; exp >>= 1) {
+			if (exp & 1) x_32 = dc_mul_redc_32(x_32, b, m, n_inv);
+			b = dc_mul_redc_32(b, b, m, n_inv);
+		}
+
+		x_32 = dc_mul_redc_32(x_32, 1U, m, n_inv);
+
+		return x_32;
+	}
+#endif
+
+	n_inv = dc_montgomery(64, m, &x);
+	base = dc_mul_mod(base, x, m);
+
+	for (; exp > 0; exp >>= 1) {
+		if (exp & 1) x = dc_mul_redc_64(x, base, m, n_inv);
+		base = dc_mul_redc_64(base, base, m, n_inv);
+	}
+
+	x = dc_mul_redc_64(x, 1ULL, m, n_inv);
 
 	return x;
 }

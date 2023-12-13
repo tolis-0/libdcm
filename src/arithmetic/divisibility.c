@@ -29,7 +29,6 @@ uint64_t dc_gcd (uint64_t u, uint64_t v)
 }
 
 
-
 /*	The faster extended Euclidean algorithm
 	in Anton Iliev, Nikolay Kyurkchiev (2018) */
 uint64_t _dc_ext_gcd (uint64_t a, uint64_t b, int64_t* s, int64_t* t)
@@ -219,7 +218,7 @@ void dc_2powk_gcd (uint8_t k, uint64_t v, uint64_t *s, uint64_t *t)
 	with respect to 2^64 */
 uint64_t dc_modinv_2pow64 (uint64_t n)
 {
-	static const unsigned char precomp_n_inv[8] =
+	static const uint8_t precomp_n_inv[8] =
 		{15, 5, 3, 9, 7, 13, 11, 1};
 	uint64_t n_inv;
 
@@ -243,7 +242,7 @@ uint64_t dc_modinv_2pow64 (uint64_t n)
 	with respect to 2^32 */
 uint32_t dc_modinv_2pow32 (uint32_t n)
 {
-	static const unsigned char precomp_n_inv[8] =
+	static const uint8_t precomp_n_inv[8] =
 		{15, 5, 3, 9, 7, 13, 11, 1};
 	uint32_t n_inv;
 
