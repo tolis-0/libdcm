@@ -45,88 +45,59 @@ uint64_t dc_pisano (uint64_t n) {
 /*	nth Fibonacci number mod m */
 uint64_t dc_fib_mod (uint64_t n, uint64_t m)
 {
-	uint64_t f0, f1, tmp, mask;
-	int arr_index;
+	uint64_t e, mask, t_inv, k, k_inv, r, neg;
+	uint64_t a_mont, b_mont, c_mont, a, b, c, ret;
 
-	/*	Get result directly from array
-		From now on we consider n >= 48 */
-	if (n < 48) return dc_fib_ar[n] % m;
+	if (n < 2) return n % m;
 
-	if ((m & 1) && n > 0x1000)
-		return dc_monfib_mod(n, m);
+	// m = t*k with k odd and t=2^e
+	e = __builtin_ctzll(m);
+	k = m >> e;
+	mask = (1ull << e) - 1ull;
 
-	/*	leading zeros (lz) are at most 58 because n > 32
-		Mask would start at 2^(63-lz) for f0 = 0, f1 = 1
-		But we skip 5 iterations by getting initial f0/f1 from array */
-	arr_index = n >> (59 - __builtin_clzll(n));
-	f0 = dc_fib_ar[arr_index] % m;
-	f1 = dc_fib_ar[arr_index + 1] % m;
-	mask = (1ULL << (58 - __builtin_clzll(n)));
+	r = (-k) % k;
+	k_inv = dc_modinv_2pow64(k);
+	neg = k - r; // -1 in montgomery form
 
-	/*	Use the method for n & mask = 0
-		And if it turns out that n & mask = 1
-		do (f0, f1) <- (f1, f1 + f0) */
-	if (m < 0x80000000) {
-		for (; mask > 0; mask >>= 1) {
-			tmp = ((2 * f1 + (m - f0)) * f0) % m;
-			f1 = (f0 * f0 + f1 * f1) % m;
-			f0 = (n & mask) ? f1 : tmp;
-			f1 = (n & mask) ? f1 + tmp : f1;
-			f1 = (f1 > m) ? f1 - m : f1;
-		}
-	}
+	unsigned __int128 _t = (unsigned __int128) k * k_inv + 1;
+	_t >>= e;
+	t_inv = (uint64_t) (_t % k);
 
+	c_mont = dc_radd_mod(r, r, k);
+	c_mont = dc_radd_mod(r, c_mont, k);
+	a_mont = (n & 1ull) ? r : 0ull;
+	b_mont = (n & 1ull) ? neg : r;
 
-	for (; mask > 0; mask >>= 1) {
-		if (n & mask) {
-			tmp = dc_radd_mod(dc_radd_mod(f0, f0, m), f1, m);
-			tmp = dc_mul_mod(tmp, f1, m);
-			f0 = dc_mul_mod(f0, f0, m);
-			f0 = dc_muladd_mod(f1, f1, f0, m);
-			f1 = tmp;
+	c = 3ull;
+	a = (n & 1ull) ? 1ull : 0ull;
+	b = (n & 1ull) ? -1ull : 1ull;
+
+	// becomes -2 in montgomery form
+	neg = dc_radd_mod(neg, neg, k);
+
+	for (n >>= 1; n > 1ull; n >>= 1) {
+		if (n & 1ull) {
+			a = b + a*c;
+			a_mont = dc_mul_redc_64(a_mont, c_mont, k, k_inv);
+			a_mont = dc_radd_mod(b_mont, a_mont, k);
 		} else {
-			tmp = dc_radd_mod(dc_radd_mod(f1, f1, m), m - f0, m);
-			tmp = dc_mul_mod(tmp, f0, m);
-			f1 = dc_mul_mod(f1, f1, m);
-			f1 = dc_muladd_mod(f0, f0, f1, m);
-			f0 = tmp;
+			b = a + b*c;
+			b_mont = dc_mul_redc_64(b_mont, c_mont, k, k_inv);
+			b_mont = dc_radd_mod(a_mont, b_mont, k);
 		}
+		c = c*c - 2ull;
+		c_mont = dc_mul_redc_64(c_mont, c_mont, k, k_inv);
+		c_mont = dc_radd_mod(c_mont, neg, k);
 	}
 
-	return f0;
-}
+	a = (b + a*c) & mask;
+	a_mont = dc_mul_redc_64(a_mont, c_mont, k, k_inv);
+	a_mont = dc_radd_mod(b_mont, a_mont, k);
 
+	ret = dc_mul_redc_64(a_mont, 1ull, k, k_inv);
+	__int128 res = (((__int128)ret - (__int128)a) * t_inv) % (__int128) k;
+	if (res < 0) res += (__int128)k;
+	ret = res;
 
-/*	Calculates nth Fibonacci number mod m with montgomery arithmetic
-	Requires odd m */
-uint64_t dc_monfib_mod (uint64_t n, uint64_t M)
-{
-	uint64_t f0, f1, tmp, tmp2, mask, Minv;
-
-	Minv = dc_montgomery(64, M, &f0);
-	f1 = f0;
-
-	mask = (1ULL << (63 - __builtin_clzll(n))) >> 1;
-
-	for (; mask > 0; mask >>= 1) {
-		if (n & mask) {
-			tmp = dc_radd_mod(f0, f0, M);
-			tmp = dc_radd_mod(tmp, f1, M);
-			tmp = dc_mul_redc_64(tmp, f1, M, Minv);
-			tmp2 = dc_mul_redc_64(f0, f0, M, Minv);
-			f0 = dc_mul_redc_64(f1, f1, M, Minv);
-			f0 = dc_radd_mod(f0, tmp2, M);
-			f1 = tmp;
-		} else {
-			tmp = dc_radd_mod(f1, f1, M);
-			tmp = dc_radd_mod(tmp, M - f0, M);
-			tmp = dc_mul_redc_64(tmp, f0, M, Minv);
-			tmp2 = dc_mul_redc_64(f0, f0, M, Minv);
-			f1 = dc_mul_redc_64(f1, f1, M, Minv);
-			f1 = dc_radd_mod(f1, tmp2, M);
-			f0 = tmp;
-		}
-	}
-
-	return dc_mul_redc_64(f0, 1ULL, M, Minv);
+	return a + (ret << e);
 }
